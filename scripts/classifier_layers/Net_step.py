@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # net.save_state_dict_model(path=state_dict_save_path)
     # load model
     model_whole = net.load_whole_model(path=whole_save_path)
-    # model_whole = net.load_state_dict_model(path=Net_and.state_dict)
+    # model_whole = net.load_state_dict_model(path=state_dict_save_path)
 
     # predict test
     y_pred = model_whole.forward(x_input) > threshold
