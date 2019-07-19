@@ -10,6 +10,7 @@ import torch.nn as nn
 
 from etc import filePathConf
 from scripts import Step
+from scripts.classifier_layers import training_purpose
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/17 20:22'
@@ -60,8 +61,8 @@ if __name__ == '__main__':
     y_target = Variable(torch.Tensor(label)).float()
 
     # save model
-    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], 'Net_step.model')
-    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], 'Net_step.state_dict')
+    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_step.model')
+    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_step.state_dict')
     # net.save_whole_model(path=whole_save_path)
     # net.save_state_dict_model(path=state_dict_save_path)
     # load model

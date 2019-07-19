@@ -9,6 +9,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
+from etc.training_purposes import training_purposes, R_REGRESSION, L_CLASSIFY
 from scripts.classifier_layers.Net_step import Net_step
 from scripts.feature_extraction_layers.Net_and import Net_and
 
@@ -59,10 +60,10 @@ if __name__ == '__main__':
     x_input_array = np.array(torch.rand(N, 2) > 0.5)
     x_input = Variable(torch.from_numpy(x_input_array)).float()
     # output
-    and_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], 'Net_and.model')
-    and_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], 'Net_and.state_dict')
-    step_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], 'Net_step.model')
-    step_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], 'Net_step.state_dict')
+    and_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purposes[R_REGRESSION], 'Net_and.model')
+    and_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purposes[R_REGRESSION], 'Net_and.state_dict')
+    step_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purposes[L_CLASSIFY], 'Net_step.model')
+    step_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purposes[L_CLASSIFY], 'Net_step.state_dict')
     model_and = Net_and()
     model_step = Net_step()
     model_and = model_and.load_whole_model(and_whole_save_path)
@@ -76,8 +77,8 @@ if __name__ == '__main__':
     y_target = Variable(torch.Tensor(label)).float()
 
     # save model
-    transfer_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], 'Net_transfer.model')
-    transfer_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], 'Net_transfer.state_dict')
+    transfer_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purposes[L_CLASSIFY], 'Net_and.model')
+    transfer_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purposes[L_CLASSIFY], 'Net_and.state_dict')
     # net.save_whole_model(transfer_whole_save_path)
     # net.save_state_dict_model(transfer_state_dict_save_path)
     # load model

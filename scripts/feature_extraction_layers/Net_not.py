@@ -10,6 +10,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
+from scripts.feature_extraction_layers import training_purpose
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/17 20:22'
@@ -101,8 +102,8 @@ if __name__ == '__main__':
     net = train(x_input, y_target, net, criterion, optimizer)
 
     # save model
-    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], 'Net_not.model')
-    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], 'Net_not.state_dict')
+    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_not.model')
+    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_not.state_dict')
     # net.save_whole_model(path=whole_save_path)
     # net.save_state_dict_model(path=state_dict_save_path)
     # load model
