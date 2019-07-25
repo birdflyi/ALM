@@ -10,28 +10,31 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
-from scripts.feature_extraction_layers import training_purpose
+from scripts.classifier_layers import training_purpose
+from scripts.classifier_layers.Net_step import Net_step
 from scripts.structure.Net_template import Net_template
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/17 20:22'
 
 # Hyper-parameters 定义迭代次数， 学习率以及模型形状的超参数
-input_size = 1
+input_size = 2
 output_size = 1
 num_epochs = 10000
 learning_rate = 0.0001
 threshold = 0
 
-
-class Net_not(Net_template):
+# todo: fit model
+class Net_signal(Net_template):
     def __init__(self, alias=None):
-        super(Net_not, self).__init__(alias)
+        super().__init__(alias)
         self.net_sequence = nn.Sequential(
-            nn.Linear(input_size, output_size),
+            nn.Linear(1, 2),
+            Net_step(),
+            nn.Linear(2, 1)
         )
         self.summary()
-
+        self.serialize_seq_atomic()
 
 def train(x, y, net, criterion, optimizer, num_epochs=num_epochs, threshold=threshold):
     # Training: forward, loss, backward, step
@@ -65,15 +68,15 @@ def train(x, y, net, criterion, optimizer, num_epochs=num_epochs, threshold=thre
 if __name__ == '__main__':
     # input
     N = 100
-    x_input_array = np.array(torch.rand(N, 1) > 0.5)
+    x_input_array = np.array(2 * torch.rand(N, 1) - 1)
     x_input = Variable(torch.from_numpy(x_input_array)).float()
     # output
-    net = Net_not()
+    net = Net_signal()
     output = net(x_input)
     # target
     label = []
     for x in x_input:
-        label.append(1 - x > 0)
+        label.append(np.sign(x))
     y_target = Variable(torch.Tensor(label)).float()
 
     # loss function
@@ -84,18 +87,19 @@ if __name__ == '__main__':
     net = train(x_input, y_target, net, criterion, optimizer)
 
     # save model
-    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_not.model')
-    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_not.state_dict')
-    # net.save_whole_model(path=whole_save_path)
-    # net.save_state_dict_model(path=state_dict_save_path)
+    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_signal.model')
+    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_signal.state_dict')
+    net.save_whole_model(path=whole_save_path)
+    net.save_state_dict_model(path=state_dict_save_path)
     # load model
     model_whole = net.load_whole_model(path=whole_save_path)
     # model_whole = net.load_state_dict_model(path=state_dict_save_path)
 
     # predict test
     y_pred = model_whole.forward(x_input) > threshold
-    y_pred_array = np.array(y_pred.detach().float().numpy().flatten())
+    y_pred_array = np.array(y_pred.detach().numpy().flatten())
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))
+    print(y_pred_array)
     print(model_whole.state_dict())
     print(model_whole.__dict__)

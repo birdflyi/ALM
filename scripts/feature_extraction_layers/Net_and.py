@@ -11,6 +11,7 @@ import torch.nn as nn
 
 from etc import filePathConf
 from scripts.feature_extraction_layers import training_purpose
+from scripts.structure.Net_template import Net_template
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/15 17:03'
@@ -22,34 +23,14 @@ num_epochs = 10000
 learning_rate = 0.0001
 threshold = 0
 
-class Net_and(nn.Module):
-    def __init__(self):
-        super(Net_and, self).__init__()
-        self.class_col = nn.Sequential(
+# todo: fit model
+class Net_and(Net_template):
+    def __init__(self, alias=None):
+        super(Net_and, self).__init__(alias)
+        self.net_sequence = nn.Sequential(
             nn.Linear(input_size, output_size),
         )
-
-    def forward(self, input):
-        out = self.class_col(input)
-        return out
-
-    def save_state_dict_model(self, path):
-        torch.save(net.state_dict(), path)
-
-    def save_whole_model(self, path):
-        torch.save(net, path)
-
-    def load_state_dict_model(self, path):
-        model = Net_and()
-        model.load_state_dict(torch.load(path))
-        return model
-
-    def load_whole_model(self, path):
-        model = torch.load(path)
-        model.eval()
-        return model
-
-
+        self.summary()
 
 
 def train(x, y, net, criterion, optimizer, num_epochs=num_epochs, threshold=threshold):
@@ -105,8 +86,8 @@ if __name__ == '__main__':
     # save model
     whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_and.model')
     state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_and.state_dict')
-    # net.save_whole_model(path=whole_save_path)
-    # net.save_state_dict_model(path=state_dict_save_path)
+    net.save_whole_model(path=whole_save_path)
+    net.save_state_dict_model(path=state_dict_save_path)
     # load model
     model_whole = net.load_whole_model(path=whole_save_path)
     # model_whole = net.load_state_dict_model(path=state_dict_save_path)
@@ -117,3 +98,4 @@ if __name__ == '__main__':
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))
     print(model_whole.state_dict())
+    print(model_whole.__dict__)

@@ -9,8 +9,9 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
-from scripts import Step
 from scripts.classifier_layers import training_purpose
+from scripts.primary_funcs.basic_nn_units import Step
+from scripts.structure.Net_template import Net_template
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/17 20:22'
@@ -18,38 +19,21 @@ __time__ = '2019/7/17 20:22'
 threshold = 0
 
 
-class Net_step(nn.Module):
-    def __init__(self):
-        super(Net_step, self).__init__()
-        self.class_col = nn.Sequential(
+class Net_step(Net_template):
+    def __init__(self, alias=None):
+        super().__init__(alias)
+        self.is_atomic = True
+        self.net_sequence = nn.Sequential(
             Step()
         )
-
-    def forward(self, input):
-        out = self.class_col(input)
-        return out
-
-    def save_state_dict_model(self, path):
-        torch.save(net.state_dict(), path)
-
-    def save_whole_model(self, path):
-        torch.save(net, path)
-
-    def load_state_dict_model(self, path):
-        model = Net_step()
-        model.load_state_dict(torch.load(path))
-        return model
-
-    def load_whole_model(self, path):
-        model = torch.load(path)
-        model.eval()
-        return model
+        self.summary()
+        self.serialize_seq_atomic()
 
 
 if __name__ == '__main__':
     # input
     N = 100
-    x_input_array = np.array(torch.rand(N, 1) > 0.5)
+    x_input_array = np.array(2 * torch.rand(N, 1) - 1)
     x_input = Variable(torch.from_numpy(x_input_array)).float()
     # output
     net = Net_step()
@@ -70,8 +54,9 @@ if __name__ == '__main__':
     # model_whole = net.load_state_dict_model(path=state_dict_save_path)
 
     # predict test
-    y_pred = model_whole.forward(x_input) > threshold
-    y_pred_array = np.array(y_pred.detach().float().numpy().flatten())
+    y_pred = model_whole.forward(x_input)
+    y_pred_array = np.array(y_pred.detach().numpy().flatten())
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))
     print(model_whole.state_dict())
+    print(model_whole.__dict__)

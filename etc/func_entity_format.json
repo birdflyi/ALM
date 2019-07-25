@@ -1,0 +1,26 @@
+{
+    "http://example.org/item/Q1": {
+        "KgId": "Q1",
+        "URI": "https://en.wikipedia.org/wiki/Heaviside_step_function",
+        "language": "en-us",
+        "mention": "Step",
+        "aliases": {
+            "zh-cn": ["单位阶跃函数", "阶跃函数"],
+            "en-us": ["Heaviside step function", "Heaviside function","heaviside","step function"]
+        },
+        "claims": {
+            "P1549": {
+                "mainsnap":[
+                    {"level1":"step function","language":"en-us"}
+                ]
+            },
+            "superClass": {
+                "mainsnap":[
+                    {"level1":"discontinuous function","language":"en-us"},
+                    {"level2":"Singular function","language":"en-us"}
+		        ]
+            }
+        },
+        "desc": "The Heaviside step function, or the unit step function, usually denoted by H or θ (but sometimes u, 1 or 𝟙), is a discontinuous function, named after Oliver Heaviside (1850–1925), whose value is zero for negative arguments and one for positive arguments."
+    }
+}
