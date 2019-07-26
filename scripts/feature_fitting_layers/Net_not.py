@@ -10,7 +10,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
-from scripts.feature_extraction_layers import training_purpose
+from scripts.feature_fitting_layers import training_purpose
 from scripts.structure.Net_template import Net_template
 
 __author__ = 'Lou Zehua'
@@ -25,8 +25,9 @@ threshold = 0
 
 
 class Net_not(Net_template):
-    def __init__(self, alias=None):
-        super(Net_not, self).__init__(alias)
+    def __init__(self, in_features=1, out_features=1, class_alias=None):
+        super(Net_not, self).__init__(in_features, out_features, class_alias)
+        self.check_purpose()
         self.net_sequence = nn.Sequential(
             nn.Linear(input_size, output_size),
         )

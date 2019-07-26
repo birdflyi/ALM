@@ -2,20 +2,30 @@
 # -*- coding: utf-8 -*-
 # Python 3.6
 import copy
+import os
 
 import torch
 import torch.nn as nn
+
+from etc import filePathConf, extensions
+from etc.training_purposes import training_purposes, R_ANALOG
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/25 16:39'
 
 
 class Net_template(nn.Module):
-    def __init__(self, alias):
+    def __init__(self, in_features, out_features, class_alias):
         super(Net_template, self).__init__()
-        self.is_atomic = False
+        self.in_features = in_features
+        self.out_features = out_features
+        self.is_atomic = False  # Only some specific nets build manually should be set to True.
+        self._purpose = ''  # It is important for Net_transfer and atomic models.
         self.name = self.__str__()
-        self.alias = alias or self.name
+        self.class_alias = class_alias or self.name.split('(')[0]
+        self._save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
+        self._save_pyfile_name = self.class_alias
+        self.save_model_name = self.class_alias
         self.net_sequence = nn.Sequential()
         # summary for module: to describe the structure of net.
         self._net_flow_process = []
@@ -37,6 +47,24 @@ class Net_template(nn.Module):
     def set_net_dependent(self, net_dependent):
         self._old_net_dependent = copy.deepcopy(self._net_dependent)
         self._net_dependent = net_dependent
+
+    def get_purpose(self):
+        return self._purpose
+
+    def set_purpose(self, purpose):
+        if not purpose in training_purposes.values():
+            msg = 'Set self.purposes to any one of %s. Training for regression (with a continuous output) ' \
+                  'or classification (with a discrete output)' % training_purposes
+            raise Warning(msg)
+        else:
+            self._purpose = purpose
+
+    def check_purpose(self):
+        purpose = training_purposes[R_ANALOG]  # Default set as R_ANALOG
+        if self.net_sequence.__len__():
+            if hasattr(self.net_sequence[-1], '_purpose'):
+                purpose = self.net_sequence[-1].get_purpose()
+        self.set_purpose(purpose)
 
     # Recall this function after updating net_sequence.
     def summary(self):
@@ -77,7 +105,6 @@ class Net_template(nn.Module):
         self.set_net_dependent(net_dependent)
         self.rebuild_seq_from_summary()
 
-
     def rollback_seq(self, seq_backup=True):
         '''
         Rollback nn.Sequential() based on old summary of structure.
@@ -108,18 +135,49 @@ class Net_template(nn.Module):
         out = self.net_sequence(input)
         return out
 
-    def save_state_dict_model(self, path):
-        torch.save(self.state_dict(), path)
+    def save_state_dict_model(self, path=None):
+        if path:
+            self.save_model_name = path.replace('\\', '/').split('/')[-1].split('.')[0]
+            self._save_model_path = path
+        else:
+            save_dir = filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR]
+            self.reset_save_model_path(save_dir, extensions.EXT_MODELS__STATE_DICT)
+        torch.save(self.state_dict(), self._save_model_path)
 
-    def save_whole_model(self, path):
-        torch.save(self, path)
+    def save_whole_model(self, path=None):
+        if path:
+            self.save_model_name = path.replace('\\', '/').split('/')[-1].split('.')[0]
+            self._save_model_path = path
+        else:
+            save_dir = filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR]
+            self.reset_save_model_path(save_dir, extensions.EXT_MODELS__WHOLE_NET_PARAMS)
+        torch.save(self, self._save_model_path)
 
-    def load_state_dict_model(self, path):
-        model = self()
-        model.load_state_dict(torch.load(path))
+    def load_state_dict_model(self, path=None):
+        model = self
+        self._save_model_path = path or self._save_model_path
+        model.load_state_dict(torch.load(self._save_model_path))
         return model
 
-    def load_whole_model(self, path):
-        model = torch.load(path)
+    def load_whole_model(self, path=None):
+        self._save_model_path = path or self._save_model_path
+        model = torch.load(self._save_model_path)
         model.eval()
         return model
+
+    def reset_save_model_path(self, save_dir, save_mode):
+        if self._purpose:
+            self._save_model_path = os.path.join(save_dir, self._purpose,
+                self.save_model_name + extensions.ext_models[save_mode])
+        else:
+            msg = 'You must decide whether the model is training for regression (with a continuous output) ' \
+                  'or classification (with a discrete output). Set purposes to any one of that with set_purpose.'
+            raise Warning(msg)
+
+    def reset_save_model_name(self):
+        self.save_model_name = self.class_alias
+
+    def extra_repr(self):
+        return 'in_features={}, out_features={}'.format(
+            self.in_features, self.out_features
+        )

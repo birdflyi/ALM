@@ -6,9 +6,9 @@ __author__ = 'Lou Zehua'
 __time__ = '2019/7/19 15:28'
 
 # Define training_purposes
-R_REGRESSION = 0
-L_CLASSIFY = 1
+R_ANALOG = 0
+L_DIGITAL = 1
 training_purposes = {
-    L_CLASSIFY: 'L_classify',
-    R_REGRESSION: 'R_regression',
+    L_DIGITAL: 'L_digital',
+    R_ANALOG: 'R_analog',
 }

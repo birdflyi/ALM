@@ -10,8 +10,8 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
-from scripts.classifier_layers import training_purpose
-from scripts.classifier_layers.Net_step import Net_step
+from scripts.digital_layers import training_purpose
+from scripts.digital_layers.Net_step import Net_step
 from scripts.structure.Net_template import Net_template
 
 __author__ = 'Lou Zehua'
@@ -21,20 +21,20 @@ __time__ = '2019/7/17 20:22'
 input_size = 2
 output_size = 1
 num_epochs = 10000
-learning_rate = 0.0001
+learning_rate = 2e-5
 threshold = 0
 
 # todo: fit model
 class Net_signal(Net_template):
-    def __init__(self, alias=None):
-        super().__init__(alias)
+    def __init__(self, in_features=1, out_features=1, class_alias=None):
+        super().__init__(in_features, out_features, class_alias)
+        self.check_purpose()
         self.net_sequence = nn.Sequential(
-            nn.Linear(1, 2),
-            Net_step(),
-            nn.Linear(2, 1)
+            nn.Linear(in_features, 2, bias=False),
+            Net_step(2, 2),
+            nn.Linear(2, out_features, bias=False)
         )
         self.summary()
-        self.serialize_seq_atomic()
 
 def train(x, y, net, criterion, optimizer, num_epochs=num_epochs, threshold=threshold):
     # Training: forward, loss, backward, step
@@ -69,6 +69,7 @@ if __name__ == '__main__':
     # input
     N = 100
     x_input_array = np.array(2 * torch.rand(N, 1) - 1)
+    x_input_array = np.append(x_input_array, np.full(N//3, 0)).reshape(-1, 1)
     x_input = Variable(torch.from_numpy(x_input_array)).float()
     # output
     net = Net_signal()
@@ -89,14 +90,14 @@ if __name__ == '__main__':
     # save model
     whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_signal.model')
     state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_signal.state_dict')
-    net.save_whole_model(path=whole_save_path)
-    net.save_state_dict_model(path=state_dict_save_path)
+    # net.save_whole_model(path=whole_save_path)
+    # net.save_state_dict_model(path=state_dict_save_path)
     # load model
     model_whole = net.load_whole_model(path=whole_save_path)
     # model_whole = net.load_state_dict_model(path=state_dict_save_path)
 
     # predict test
-    y_pred = model_whole.forward(x_input) > threshold
+    y_pred = model_whole.forward(x_input)
     y_pred_array = np.array(y_pred.detach().numpy().flatten())
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))

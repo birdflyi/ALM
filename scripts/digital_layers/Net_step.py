@@ -9,7 +9,8 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
-from scripts.classifier_layers import training_purpose
+from etc.training_purposes import training_purposes, L_DIGITAL
+from scripts.digital_layers import training_purpose
 from scripts.primary_funcs.basic_nn_units import Step
 from scripts.structure.Net_template import Net_template
 
@@ -20,14 +21,14 @@ threshold = 0
 
 
 class Net_step(Net_template):
-    def __init__(self, alias=None):
-        super().__init__(alias)
+    def __init__(self, in_features=1, out_features=1, class_alias=None):
+        super().__init__(in_features, out_features, class_alias)
         self.is_atomic = True
+        self.set_purpose(training_purposes[L_DIGITAL])  # Set purpose manually if model is atomic
         self.net_sequence = nn.Sequential(
-            Step()
+            Step(in_features, out_features)
         )
         self.summary()
-        self.serialize_seq_atomic()
 
 
 if __name__ == '__main__':
@@ -47,8 +48,8 @@ if __name__ == '__main__':
     # save model
     whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_step.model')
     state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_step.state_dict')
-    # net.save_whole_model(path=whole_save_path)
-    # net.save_state_dict_model(path=state_dict_save_path)
+    net.save_whole_model(path=whole_save_path)
+    net.save_state_dict_model(path=state_dict_save_path)
     # load model
     model_whole = net.load_whole_model(path=whole_save_path)
     # model_whole = net.load_state_dict_model(path=state_dict_save_path)
