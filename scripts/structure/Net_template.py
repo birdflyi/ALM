@@ -25,6 +25,7 @@ class Net_template(nn.Module):
         self.class_alias = class_alias or self.name.split('(')[0]
         self._save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
         self._save_pyfile_name = self.class_alias
+        self.caller_pyfile_path = os.path.abspath(__file__)
         self.save_model_name = self.class_alias
         self.net_sequence = nn.Sequential()
         # summary for module: to describe the structure of net.
@@ -58,6 +59,12 @@ class Net_template(nn.Module):
             raise Warning(msg)
         else:
             self._purpose = purpose
+
+    def get_caller_pyfile_path(self):
+        return self.caller_pyfile_path
+
+    def set_caller_pyfile_path(self, path):
+        self.caller_pyfile_path = path
 
     def check_purpose(self):
         purpose = training_purposes[R_ANALOG]  # Default set as R_ANALOG

@@ -26,10 +26,11 @@ threshold = 0
 class Net_and(Net_template):
     def __init__(self, in_features=2, out_features=1, class_alias=None):
         super(Net_and, self).__init__(in_features, out_features, class_alias)
-        self.check_purpose()
         self.net_sequence = nn.Sequential(
             nn.Linear(input_size, output_size),
         )
+        self.set_caller_pyfile_path(os.path.abspath(__file__))
+        self.check_purpose()
         self.summary()
 
 

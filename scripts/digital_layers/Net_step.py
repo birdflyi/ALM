@@ -24,10 +24,11 @@ class Net_step(Net_template):
     def __init__(self, in_features=1, out_features=1, class_alias=None):
         super().__init__(in_features, out_features, class_alias)
         self.is_atomic = True
-        self.set_purpose(training_purposes[L_DIGITAL])  # Set purpose manually if model is atomic
         self.net_sequence = nn.Sequential(
             Step(in_features, out_features)
         )
+        self.set_caller_pyfile_path(os.path.abspath(__file__))
+        self.set_purpose(training_purposes[L_DIGITAL])  # Set purpose manually if model is atomic
         self.summary()
 
 

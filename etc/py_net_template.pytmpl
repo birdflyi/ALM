@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Python 3.6
+import torch.nn as nn
+
+{}
+from scripts.structure.Net_template import Net_template
+
+__author__ = 'ALM'
+__time__ = '{}'
+
+class {}(Net_template):
+    def __init__(self, in_features={}, out_features={}, class_alias=None):
+        super({}, self).__init__(in_features, out_features, class_alias)
+        self.net_sequence = nn.Sequential(
+            {}
+        )
+        self.check_purpose()
+        self.summary()
+
+
+if __name__ == '__main__':
+    net = {}()
+    # save and load model pairs
+    net.save_whole_model()
+    model = net.load_whole_model()
+    net.save_state_dict_model()
+    model = net.load_state_dict_model()
+    # print messages of net
+    print(model.class_alias)
+    print(model.__dict__)

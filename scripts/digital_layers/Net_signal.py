@@ -25,6 +25,8 @@ learning_rate = 2e-5
 threshold = 0
 
 # todo: fit model
+# todo: add_function with logic
+# todo: recursive_function with logic
 class Net_signal(Net_template):
     def __init__(self, in_features=1, out_features=1, class_alias=None):
         super().__init__(in_features, out_features, class_alias)
