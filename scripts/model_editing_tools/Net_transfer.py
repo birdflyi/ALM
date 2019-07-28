@@ -24,6 +24,7 @@ __time__ = '2019/7/19 10:20'
 
 threshold = 0
 
+
 class Net_transfer(Net_template):
     def __init__(self, features_model, classifier_model, class_alias):
         super(Net_transfer, self).__init__(features_model.in_features, classifier_model.out_features, class_alias)
@@ -90,9 +91,9 @@ class Net_transfer(Net_template):
 if __name__ == '__main__':
     # 1. Transfer settings
     BUILD_NEW_MODEL = True
-    Net_features = Net_and()
+    Net_features = Net_not()
     Net_classifier = Net_step()
-    transfer_model_class_alias = 'Net_and_AD'
+    transfer_model_class_alias = 'Net_not_AD'
     # Const extension strings
     STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
     WHOLE_NET_PARAMS_EXT = extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS]
@@ -106,8 +107,8 @@ if __name__ == '__main__':
 
     # input
     N = 100
-    x_input_array = np.array(torch.rand(N, 2) > 0.5)
-    # x_input_array = np.array(torch.rand(N, 1) > 0.5)
+    # x_input_array = np.array(torch.rand(N, 2) > 0.5)
+    x_input_array = np.array(torch.rand(N, 1) > 0.5)
     x_input = Variable(torch.from_numpy(x_input_array)).float()
 
     # output
@@ -117,9 +118,9 @@ if __name__ == '__main__':
     # target
     label = []
     for x in x_input:
-        label.append(sum(x) > 1)  # Net_and
+        # label.append(sum(x) > 1)  # Net_and
         # label.append(sum(x) > 0)  # Net_or
-        # label.append(1 - x > 0)  # Net_not
+        label.append(1 - x > 0)  # Net_not
     y_target = Variable(torch.Tensor(label)).float()
 
     # save and load model pairs

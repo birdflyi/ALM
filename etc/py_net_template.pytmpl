@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Python 3.6
+import os
+
 import torch.nn as nn
 
 {}
@@ -15,6 +17,7 @@ class {}(Net_template):
         self.net_sequence = nn.Sequential(
             {}
         )
+        self.set_caller_pyfile_path(os.path.abspath(__file__))
         self.check_purpose()
         self.summary()
 
