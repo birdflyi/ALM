@@ -25,7 +25,7 @@ threshold = 0
 
 
 class Net_or(Net_template):
-    def __init__(self, in_features=2, out_features=1, class_alias=False):
+    def __init__(self, in_features=2, out_features=1, class_alias=None):
         super(Net_or, self).__init__(in_features, out_features, class_alias)
         self.net_sequence = nn.Sequential(
             nn.Linear(input_size, output_size),

@@ -14,3 +14,8 @@ ext_models = {
     EXT_MODELS__STATE_DICT: '.state_dict',
     EXT_MODELS__WHOLE_NET_PARAMS: '.model',
 }
+# -------------------------------------------------extensions of codes-------------------------------------------------
+EXT_CODES__PY = 0
+ext_codes = {
+    EXT_CODES__PY: '.py',
+}

@@ -36,7 +36,8 @@ class Net_transfer(Net_template):
         self.class_alias = class_alias
         self._save_pyfile_name = self.class_alias
         self.save_model_name = self.class_alias
-        self.save_pyfile_path = os.path.join(BASE_DIR, 'scripts/auto_learned_recently', self.class_alias + '.py')
+        self.save_pyfile_path = os.path.join(filePathConf.absPathDict[filePathConf.PY_NET_TEMPLATE_CODE_DIR],
+                                             self.class_alias + extensions.ext_codes[extensions.EXT_CODES__PY])
         # Transfer structure
         self.net_sequence = nn.Sequential(
             features_model,

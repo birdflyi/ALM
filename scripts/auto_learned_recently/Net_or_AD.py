@@ -10,7 +10,7 @@ from scripts.digital_layers.Net_step import Net_step
 from scripts.structure.Net_template import Net_template
 
 __author__ = 'ALM'
-__time__ = '2019-07-28 11:39:55.208210'
+__time__ = '2019-07-28 19:08:26.009084'
 
 class Net_or_AD(Net_template):
     def __init__(self, in_features=2, out_features=1, class_alias=None):
