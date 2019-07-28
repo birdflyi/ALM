@@ -10,7 +10,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 
-from etc import filePathConf, extensions
+from etc import filePathConf, extensions, training_purposes
 from etc.filePathConf import BASE_DIR
 from etc.profiles import encoding
 from scripts.digital_layers.Net_step import Net_step
@@ -18,6 +18,7 @@ from scripts.feature_fitting_layers.Net_and import Net_and
 from scripts.feature_fitting_layers.Net_not import Net_not
 from scripts.feature_fitting_layers.Net_or import Net_or
 from scripts.structure.Net_template import Net_template
+from scripts.utils.fileUtils.move import movefile
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/19 10:20'
@@ -144,3 +145,17 @@ if __name__ == '__main__':
         cmd_str = 'python {}'.format(net.save_pyfile_path)
         os.system(cmd_str)
         print('The model has been successfully built.')
+        # Move validated file
+        print('Move validated file to common nn scripts directory...')
+        src_path = net.save_pyfile_path
+        dest_path = os.path.join(training_purposes.project_purposes_scriptsDir[net.get_purpose()],
+            net.class_alias + extensions.ext_codes[extensions.EXT_CODES__PY])
+        if os.path.exists(dest_path):
+            print('Target path exists a same name file. Moving file operation is canceled.')
+        else:
+            movefile(src_path, dest_path)
+            print('Move file successfully.')
+            # Rebuild model to update caller_pyfile_path
+            cmd_str = 'python {}'.format(dest_path)
+            os.system(cmd_str)
+            print('rebuilt model successfully.')
