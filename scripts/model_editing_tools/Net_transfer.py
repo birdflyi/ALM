@@ -3,20 +3,16 @@
 # Python 3.6
 import datetime
 import os
-import re
 
 import numpy as np
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
 
-from etc import filePathConf, extensions, training_purposes
-from etc.filePathConf import BASE_DIR
+from etc import filePathConf, extensions, training_purposes, code_style
 from etc.profiles import encoding
 from scripts.digital_layers.Net_step import Net_step
-from scripts.feature_fitting_layers.Net_and import Net_and
 from scripts.feature_fitting_layers.Net_not import Net_not
-from scripts.feature_fitting_layers.Net_or import Net_or
 from scripts.structure.Net_template import Net_template
 from scripts.utils.fileUtils.move import movefile
 
@@ -54,24 +50,14 @@ class Net_transfer(Net_template):
     def auto_set_purpose(self, classifier_model):
         self.set_purpose(classifier_model._purpose)
 
-    def get_net_import_str(self, net_model):
-        net_caller_pyfile_path = net_model.get_caller_pyfile_path().replace('\\', '/')
-        base_dir_path = BASE_DIR.replace('\\', '/')
-        if not re.match(base_dir_path, net_caller_pyfile_path):
-            raise ImportError('Cannot find "{}" with root path "{}".'.format(net_caller_pyfile_path, base_dir_path))
-        import_module = net_caller_pyfile_path.replace(base_dir_path, '')
-        import_module = import_module.rstrip('py').replace('/',  '.').strip('.')
-        import_fmt_str = 'from {} import {}'.format(import_module, net_model.class_alias)
-        return import_fmt_str
-
     def rebuild_transfer_net_py(self):
         net_seq_models = list(self.get_net_dependent().values())
         net_seq_names = [net_model.name for net_model in net_seq_models]
         self.caller_pyfile_path.replace('\\', '/')
-        net_seq_import = [self.get_net_import_str(net_model) for net_model in net_seq_models]
+        net_seq_import = [net_model.get_net_import_str() for net_model in net_seq_models]
         param_time = datetime.datetime.now()
         param_class_name = self.class_alias
-        param_net_sequence = ','.join(net_seq_names)
+        param_net_sequence = ',\n{}'.join(net_seq_names).format(code_style.DEFAULT_INDENTATION__PY * 3)
         param_net_seq_import = '\n'.join(net_seq_import)
         param_input_size = self.net_sequence[0].in_features
         param_output_size = self.net_sequence[-1].in_features
@@ -96,6 +82,21 @@ if __name__ == '__main__':
     Net_features = Net_not()
     Net_classifier = Net_step()
     transfer_model_class_alias = 'Net_not_AD'
+    # Extra settings for test
+    # input
+    N = 100
+    # x_input_array = np.array(torch.rand(N, 2) > 0.5)
+    x_input_array = np.array(torch.rand(N, 1) > 0.5)
+    x_input = Variable(torch.from_numpy(x_input_array)).float()
+    # target
+    label = []
+    for x in x_input:
+        # label.append(sum(x) > 1)  # Net_and
+        # label.append(sum(x) > 0)  # Net_or
+        label.append(1 - x > 0)  # Net_not
+    y_target = Variable(torch.Tensor(label)).float()
+
+    # Init models
     # Const extension strings
     STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
     WHOLE_NET_PARAMS_EXT = extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS]
@@ -107,23 +108,10 @@ if __name__ == '__main__':
     Net_features = Net_features.load_whole_model(features_whole_save_path)
     Net_classifier = Net_classifier.load_whole_model(classifier_whole_save_path)
 
-    # input
-    N = 100
-    # x_input_array = np.array(torch.rand(N, 2) > 0.5)
-    x_input_array = np.array(torch.rand(N, 1) > 0.5)
-    x_input = Variable(torch.from_numpy(x_input_array)).float()
-
     # output
     # 2. Create a Net_transfer object
     net = Net_transfer(Net_features, Net_classifier, transfer_model_class_alias)
     output = net(x_input)
-    # target
-    label = []
-    for x in x_input:
-        # label.append(sum(x) > 1)  # Net_and
-        # label.append(sum(x) > 0)  # Net_or
-        label.append(1 - x > 0)  # Net_not
-    y_target = Variable(torch.Tensor(label)).float()
 
     # save and load model pairs
     net.save_whole_model()

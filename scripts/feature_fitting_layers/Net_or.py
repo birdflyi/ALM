@@ -77,6 +77,7 @@ if __name__ == '__main__':
     for x in x_input:
         label.append(sum(x) > 0)
     y_target = Variable(torch.Tensor(label)).float()
+    y_target = y_target.view(x_input.shape[0], -1)
 
     # loss function
     criterion = nn.MSELoss()
@@ -96,7 +97,7 @@ if __name__ == '__main__':
 
     # predict test
     y_pred = model_whole.forward(x_input) > threshold
-    y_pred_array = np.array(y_pred.detach().float().numpy().flatten())
+    y_pred_array = np.array(y_pred.detach().float().numpy())
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))
     print(model_whole.state_dict())

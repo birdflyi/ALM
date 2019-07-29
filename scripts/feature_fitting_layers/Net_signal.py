@@ -10,7 +10,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf
-from scripts.digital_layers import training_purpose
+from scripts.feature_fitting_layers import training_purpose
 from scripts.digital_layers.Net_step import Net_step
 from scripts.structure.Net_template import Net_template
 
@@ -81,6 +81,7 @@ if __name__ == '__main__':
     for x in x_input:
         label.append(np.sign(x))
     y_target = Variable(torch.Tensor(label)).float()
+    y_target = y_target.view(x_input.shape[0], -1)
 
     # loss function
     criterion = nn.MSELoss()
@@ -100,7 +101,7 @@ if __name__ == '__main__':
 
     # predict test
     y_pred = model_whole.forward(x_input)
-    y_pred_array = np.array(y_pred.detach().numpy().flatten())
+    y_pred_array = np.array(y_pred.detach().numpy())
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))
     print(y_pred_array)

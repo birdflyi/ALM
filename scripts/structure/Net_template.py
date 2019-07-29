@@ -3,12 +3,15 @@
 # Python 3.6
 import copy
 import os
+import re
 
 import torch
 import torch.nn as nn
 
 from etc import filePathConf, extensions
+from etc.profiles import BASE_DIR
 from etc.training_purposes import training_purposes, R_ANALOG
+from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/25 16:39'
@@ -183,6 +186,11 @@ class Net_template(nn.Module):
 
     def reset_save_model_name(self):
         self.save_model_name = self.class_alias
+
+    def get_net_import_str(self):
+        import_module_path = path_File2Module(self.get_caller_pyfile_path(), absfilepath=True)
+        import_fmt_str = 'from {} import {}'.format(import_module_path, self.class_alias)
+        return import_fmt_str
 
     def extra_repr(self):
         return 'in_features={}, out_features={}'.format(

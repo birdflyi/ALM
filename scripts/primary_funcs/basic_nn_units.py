@@ -35,9 +35,12 @@ class Add(nn.Module):
         self.out_features = out_features
 
     def forward(self, x):
-        x_numpy = x.numpy().transpose()
-        x = Variable(torch.from_numpy(x_numpy)).float()
-        return sum(x).float()
+        x_shape = x.shape
+        x = torch.transpose(x, -1, 0)
+        out = sum(x)
+        out = Variable(out).float()
+        out = torch.transpose(out, -1, 0).view(x_shape[0], -1)
+        return out
 
     def extra_repr(self):
         return 'in_features={}, out_features={}'.format(
@@ -52,9 +55,12 @@ class Multiply(nn.Module):
         self.out_features = out_features
 
     def forward(self, x):
-        x_numpy = x.numpy().transpose()
-        x = Variable(torch.from_numpy(x_numpy)).float()
-        return reduce(operator.mul, x, 1)
+        x_shape = x.shape
+        x = torch.transpose(x, -1, 0)
+        out = reduce(operator.mul, x, 1)
+        out = Variable(out).float()
+        out = torch.transpose(out, -1, 0).view(x_shape[0], -1)
+        return out
 
     def extra_repr(self):
         return 'in_features={}, out_features={}'.format(
@@ -65,7 +71,7 @@ class Multiply(nn.Module):
 if __name__ == '__main__':
     # input
     N = 100
-    x_input_array = np.array(torch.rand(N, 3))
+    x_input_array = np.array(torch.rand(N, 3) - 0.5)
     x_input = Variable(torch.from_numpy(x_input_array)).float()
     # output
     net = Multiply(in_features=3, out_features=1)
@@ -73,8 +79,11 @@ if __name__ == '__main__':
     # target
     label = []
     for x in x_input:
+        # label.append((x > 0).numpy())
+        # label.append((sum(x)).numpy())
         label.append((reduce(operator.mul, x, 1)).numpy())
     y_target = Variable(torch.Tensor(np.array(label))).float()
+    y_target = y_target.view(x_input.shape[0], -1)
 
     # predict test
     y_pred = net.forward(x_input)

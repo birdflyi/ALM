@@ -45,6 +45,7 @@ if __name__ == '__main__':
     for x in x_input:
         label.append(x > 0)
     y_target = Variable(torch.Tensor(label)).float()
+    y_target = y_target.view(x_input.shape[0], -1)
 
     # save model
     whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_step.model')
@@ -57,7 +58,7 @@ if __name__ == '__main__':
 
     # predict test
     y_pred = model_whole.forward(x_input)
-    y_pred_array = np.array(y_pred.detach().numpy().flatten())
+    y_pred_array = np.array(y_pred.detach().numpy())
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))
     print(model_whole.state_dict())

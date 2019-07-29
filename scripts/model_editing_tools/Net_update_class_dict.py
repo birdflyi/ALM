@@ -4,7 +4,13 @@
 import os
 
 from etc import filePathConf, extensions
+from scripts.digital_layers.Net_step import Net_step
+from scripts.feature_fitting_layers.Net_add import Net_add
+from scripts.feature_fitting_layers.Net_and import Net_and
+from scripts.feature_fitting_layers.Net_multiply import Net_multiply
+from scripts.feature_fitting_layers.Net_not import Net_not
 from scripts.feature_fitting_layers.Net_or import Net_or
+from scripts.feature_fitting_layers.Net_signal import Net_signal
 from scripts.structure.Net_template import Net_template
 
 __author__ = 'Lou Zehua'
@@ -37,22 +43,30 @@ class Net_update_class_dict(Net_template):
         return dest_model
 
 
-if __name__ == '__main__':
+def update_models(src_model, model_save_path, state_dict_mode=True):
     # 1. Load trained src_model
-    src_model = Net_or()
-    STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
-    WHOLE_NET_PARAMS_EXT = extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS]
-    features_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], src_model.get_purpose(), src_model.class_alias + WHOLE_NET_PARAMS_EXT)
-    src_model = src_model.load_whole_model(features_whole_save_path)
+    if state_dict_mode:
+        src_model = src_model.load_state_dict_model(model_save_path)
+    else:
+        src_model = src_model.load_whole_model(model_save_path)
 
     # 2. Create a Net_update_class_dict object based on src_model
     net = Net_update_class_dict(src_model).model
 
     # 3. Save and load model pairs
     net.save_whole_model()
-    model_whole = net.load_whole_model()
+    model_reload = net.load_whole_model()
     net.save_state_dict_model()
-    model_whole = net.load_state_dict_model()
+    model_reload = net.load_state_dict_model()
+    return model_reload
 
-    print(model_whole.state_dict())
-    print(model_whole.__dict__)
+
+if __name__ == '__main__':
+    # 1. Load trained src_model
+    src_model = Net_step()
+    STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
+    WHOLE_NET_PARAMS_EXT = extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS]
+    features_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], src_model.get_purpose(), src_model.class_alias + WHOLE_NET_PARAMS_EXT)
+    model_reload = update_models(src_model, features_whole_save_path, state_dict_mode=False)
+    print(model_reload.state_dict())
+    print(model_reload.__dict__)

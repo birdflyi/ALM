@@ -3,10 +3,11 @@
 # Python 3.6
 import os
 
+from etc.profiles import BASE_DIR
+
 __author__ = 'Lou Zehua'
 __time__ = '2018/9/25 18:33'
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ----------------------------------------------------------------------------------------------------------------------
 #  Define file_indexes

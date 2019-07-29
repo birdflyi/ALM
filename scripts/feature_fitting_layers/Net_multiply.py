@@ -12,7 +12,7 @@ import torch.nn as nn
 
 from etc import filePathConf
 from etc.training_purposes import training_purposes, R_ANALOG
-from scripts.digital_layers import training_purpose
+from scripts.feature_fitting_layers import training_purpose
 from scripts.primary_funcs.basic_nn_units import Multiply
 from scripts.structure.Net_template import Net_template
 
@@ -45,6 +45,7 @@ if __name__ == '__main__':
     for x in x_input:
         label.append((reduce(operator.mul, x, 1)).numpy())
     y_target = Variable(torch.Tensor(np.array(label))).float()
+    y_target = y_target.view(x_input.shape[0], -1)
 
     # save model
     whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_multiply.model')
