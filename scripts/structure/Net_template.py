@@ -3,13 +3,11 @@
 # Python 3.6
 import copy
 import os
-import re
 
 import torch
 import torch.nn as nn
 
 from etc import filePathConf, extensions
-from etc.profiles import BASE_DIR
 from etc.training_purposes import training_purposes, R_ANALOG
 from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 

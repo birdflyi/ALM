@@ -75,8 +75,8 @@ if __name__ == '__main__':
     # target
     label = []
     for x in x_input:
-        label.append(sum(x) > 0)
-    y_target = Variable(torch.Tensor(label)).float()
+        label.append((sum(x) > 0).numpy())
+    y_target = Variable(torch.Tensor(np.array(label))).float()
     y_target = y_target.view(x_input.shape[0], -1)
 
     # loss function

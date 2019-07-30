@@ -12,6 +12,7 @@ from scripts.feature_fitting_layers.Net_not import Net_not
 from scripts.feature_fitting_layers.Net_or import Net_or
 from scripts.feature_fitting_layers.Net_signal import Net_signal
 from scripts.structure.Net_template import Net_template
+from scripts.utils.commons.dict_update import dict_update_left_join_recursive
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/28 11:55'
@@ -37,9 +38,7 @@ class Net_update_class_dict(Net_template):
         self.model = self.get_updated_model(self.src_model, self.dest_model)
 
     def get_updated_model(self, src_model, dest_model):
-        reload_model_dict = {k: v for k, v in src_model.__dict__.items()
-                                  if k in dest_model.__dict__.keys()}
-        dest_model.__dict__.update(reload_model_dict)
+        dest_model.__dict__.update(dict_update_left_join_recursive(dest_model.__dict__, src_model.__dict__))
         return dest_model
 
 

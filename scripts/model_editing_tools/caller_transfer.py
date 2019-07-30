@@ -10,6 +10,7 @@ from torch.autograd import Variable
 
 from etc import training_purposes, filePathConf, extensions
 from scripts.model_editing_tools.Net_transfer import Net_transfer
+from scripts.utils.commons.dict_update import dict_update_left_join_recursive
 from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 from scripts.utils.fileUtils.move import movefile
 
@@ -53,13 +54,16 @@ def transfer_models(features_net_abspath, features_net_name,
     Net_classifier = Net_classifier.load_state_dict_model(classifier_state_dict_save_path)
     # 2. Create a Net_transfer object
     net = Net_transfer(Net_features, Net_classifier, transfer_model_class_alias)
-    # save and load model pairs
-    net.save_whole_model()
-    model_reload = net.load_whole_model()
-    net.save_state_dict_model()
-    model_reload = net.load_state_dict_model()
     # 3. Rebuild the result model
     net.rebuild_transfer_net_py()
+    Net_trans_module_path = path_File2Module(net.save_pyfile_path, absfilepath=True)
+    Net_trans_module = importlib.import_module(Net_trans_module_path)
+    model_reload = getattr(Net_trans_module, transfer_model_class_alias)(
+        net.in_features, net.out_features, transfer_model_class_alias)
+    model_reload.__dict__.update(dict_update_left_join_recursive(model_reload.__dict__, net.__dict__))
+    model_reload.save_state_dict_model()
+    cur_save_model_path = model_reload._save_model_path
+    model_reload.load_state_dict_model(cur_save_model_path)
     if build_new_model:
         # cmd: python run
         cmd_str = 'python {}'.format(net.save_pyfile_path)
@@ -84,8 +88,9 @@ def transfer_models(features_net_abspath, features_net_name,
         # update model_reload
         Net_trans_module_path = path_File2Module(caller_pyfile_path, absfilepath=True)
         Net_trans_module = importlib.import_module(Net_trans_module_path)
-        model_reload = getattr(Net_trans_module, transfer_model_class_alias)()
-        model_reload.load_state_dict_model(net._save_model_path)
+        model_reload = getattr(Net_trans_module, transfer_model_class_alias)(
+            net.in_features, net.out_features, transfer_model_class_alias)
+        model_reload.load_state_dict_model(cur_save_model_path)
     return model_reload
 
 
@@ -110,8 +115,8 @@ if __name__ == '__main__':
     # target
     label = []
     for x in x_input:
-        # label.append(sum(x) > 1)  # Net_and
-        # label.append(sum(x) > 0)  # Net_or
+        # label.append((sum(x) > 1).numpy())  # Net_and
+        # label.append((sum(x) > 0).numpy())  # Net_or
         label.append((1 - x > 0).numpy())  # Net_not
     y_target = Variable(torch.Tensor(np.array(label))).float()
     y_target = y_target.view(x_input.shape[0], -1)

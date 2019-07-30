@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Python 3.6
 import datetime
+import importlib
 import os
 
 import numpy as np
@@ -14,6 +15,8 @@ from etc.profiles import encoding
 from scripts.digital_layers.Net_step import Net_step
 from scripts.feature_fitting_layers.Net_not import Net_not
 from scripts.structure.Net_template import Net_template
+from scripts.utils.commons.dict_update import dict_update_left_join_recursive
+from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 from scripts.utils.fileUtils.move import movefile
 
 __author__ = 'Lou Zehua'
@@ -91,9 +94,9 @@ if __name__ == '__main__':
     # target
     label = []
     for x in x_input:
-        # label.append(sum(x) > 1)  # Net_and
-        # label.append(sum(x) > 0)  # Net_or
-        label.append(1 - x > 0)  # Net_not
+        # label.append((sum(x) > 1).numpy())  # Net_and
+        # label.append((sum(x) > 0).numpy())  # Net_or
+        label.append((1 - x > 0).numpy())  # Net_not
     y_target = Variable(torch.Tensor(label)).float()
 
     # Init models
@@ -113,19 +116,24 @@ if __name__ == '__main__':
     net = Net_transfer(Net_features, Net_classifier, transfer_model_class_alias)
     output = net(x_input)
 
-    # save and load model pairs
-    net.save_whole_model()
-    model_whole = net.load_whole_model()
-    net.save_state_dict_model()
-    model_whole = net.load_state_dict_model()
+    # 3. Rebuild the result model
+    net.rebuild_transfer_net_py()
+    Net_trans_module_path = path_File2Module(net.save_pyfile_path, absfilepath=True)
+    Net_trans_module = importlib.import_module(Net_trans_module_path)
+    model_reload = getattr(Net_trans_module, transfer_model_class_alias)(
+        net.in_features, net.out_features, transfer_model_class_alias)
+    model_reload.__dict__.update(dict_update_left_join_recursive(model_reload.__dict__, net.__dict__))
+    model_reload.save_state_dict_model()
+    cur_save_model_path = model_reload._save_model_path
+    model_reload.load_state_dict_model(cur_save_model_path)
 
     # predict test
-    y_pred = model_whole.forward(x_input)
-    y_pred_array = np.array(y_pred.detach().float().numpy().flatten())
+    y_pred = model_reload.forward(x_input)
+    y_pred_array = np.array(y_pred.detach().float().numpy())
     y_target_array = np.array(y_target.numpy())
     print(sum(y_pred_array == y_target_array))
-    print(model_whole.state_dict())
-    print(model_whole.__dict__)
+    print(model_reload.state_dict())
+    print(model_reload.__dict__)
 
     # 3. Rebuild the result model
     net.rebuild_transfer_net_py()
