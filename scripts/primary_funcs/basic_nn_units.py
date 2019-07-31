@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Python 3.6
 import operator
+import warnings
 from functools import reduce
 import numpy as np
 import torch
@@ -11,6 +12,28 @@ from torch.autograd import Variable
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/25 17:10'
+
+
+class Pass(nn.Module):
+    def __init__(self, in_features, out_features):
+        super(Pass, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.validate_shape()
+
+    def forward(self, x):
+        return x
+
+    def extra_repr(self):
+        return 'in_features={}, out_features={}'.format(
+            self.in_features, self.out_features
+        )
+
+    def validate_shape(self):
+        if not self.in_features == self.out_features:
+            self.out_features = self.in_features
+            warnings.warn('"in_features" is different from "out_features". The value of "out_features" will be '
+                          'reset to "in_features" value.')
 
 
 class Step(nn.Module):
