@@ -76,8 +76,8 @@ class Net_template(nn.Module):
 
     # Recall this function after updating net_sequence.
     def summary(self):
-        net_flow_process = self.get_net_flow_process()
-        net_dependent = self.get_net_dependent()
+        net_flow_process = []
+        net_dependent = {}
         for item in self.net_sequence:
             item_class_name = item.__str__()
             net_flow_process.append(item_class_name)
