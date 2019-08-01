@@ -10,7 +10,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 
-from etc import filePathConf
+from etc import filePathConf, extensions
 from etc.training_purposes import training_purposes, R_ANALOG
 from scripts.feature_fitting_layers import training_purpose
 from scripts.primary_funcs.basic_nn_units import Multiply
@@ -48,8 +48,10 @@ if __name__ == '__main__':
     y_target = y_target.view(x_input.shape[0], -1)
 
     # save model
-    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose, 'Net_multiply.model')
-    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose, 'Net_multiply.state_dict')
+    whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], training_purpose,
+                                   net.save_model_name + extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS])
+    state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose,
+                                        net.save_model_name + extensions.ext_models[extensions.EXT_MODELS__STATE_DICT])
     net.save_whole_model(path=whole_save_path)
     net.save_state_dict_model(path=state_dict_save_path)
     # load model

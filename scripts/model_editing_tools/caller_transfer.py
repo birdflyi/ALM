@@ -45,10 +45,11 @@ def transfer_models(features_net_abspath, features_net_name,
     # Const extension strings
     STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
     features_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR],
-                                                 Net_features.get_purpose(), Net_features.class_alias + STATE_DICT_EXT)
+                                                 Net_features.get_purpose(),
+                                                 Net_features.save_model_name + STATE_DICT_EXT)
     classifier_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR],
                                                    Net_classifier.get_purpose(),
-                                                   Net_classifier.class_alias + STATE_DICT_EXT)
+                                                   Net_classifier.save_model_name + STATE_DICT_EXT)
     # Load Trained models
     Net_features = Net_features.load_state_dict_model(features_state_dict_save_path)
     Net_classifier = Net_classifier.load_state_dict_model(classifier_state_dict_save_path)

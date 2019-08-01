@@ -10,6 +10,7 @@ import torch.nn as nn
 from etc import filePathConf, extensions
 from etc.training_purposes import training_purposes, R_ANALOG
 from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
+from scripts.utils.stringUtils.replace_chars import replace_chars
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/25 16:39'
@@ -27,7 +28,8 @@ class Net_template(nn.Module):
         self._save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
         self._save_pyfile_name = self.class_alias
         self.caller_pyfile_path = os.path.abspath(__file__)
-        self.save_model_name = self.class_alias
+        self.save_model_name = replace_chars(self.name, [' ', '=', ')', '\n', '_features'], '')
+        self.save_model_name = self.save_model_name.replace('(', '__').replace(',', '_')
         self.net_sequence = nn.Sequential()
         # summary for module: to describe the structure of net.
         self._net_flow_process = []
@@ -183,7 +185,8 @@ class Net_template(nn.Module):
             raise Warning(msg)
 
     def reset_save_model_name(self):
-        self.save_model_name = self.class_alias
+        self.save_model_name = replace_chars(self.name, [' ', '=', ')', '\n', '_features'], '')
+        self.save_model_name = self.save_model_name.replace('(', '__').replace(',', '_')
 
     def get_net_import_str(self):
         import_module_path = path_File2Module(self.get_caller_pyfile_path(), absfilepath=True)

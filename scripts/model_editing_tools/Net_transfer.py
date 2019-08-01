@@ -31,11 +31,11 @@ class Net_transfer(Net_template):
         # self.set_purposes(purpose)
         self.features_model, self.classifier_model = features_model, classifier_model
         self.auto_set_purpose(self.classifier_model)
-        self.name = features_model.name.replace(features_model.name.split('(')[0], class_alias)
+        self.name = self.name.replace(self.name.split('(')[0], class_alias)
         # 'class_alias' is used for the definition of a new model in a python file.
         self.class_alias = class_alias
         self._save_pyfile_name = self.class_alias
-        self.save_model_name = self.class_alias
+        self.reset_save_model_name()
         self.save_pyfile_path = os.path.join(filePathConf.absPathDict[filePathConf.PY_NET_TEMPLATE_CODE_DIR],
                                              self.class_alias + extensions.ext_codes[extensions.EXT_CODES__PY])
         # Transfer structure
@@ -103,10 +103,18 @@ if __name__ == '__main__':
     # Const extension strings
     STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
     WHOLE_NET_PARAMS_EXT = extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS]
-    features_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], Net_features.get_purpose(), Net_features.class_alias + WHOLE_NET_PARAMS_EXT)
-    features_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], Net_features.get_purpose(), Net_features.class_alias + STATE_DICT_EXT)
-    classifier_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], Net_classifier.get_purpose(), Net_classifier.class_alias + WHOLE_NET_PARAMS_EXT)
-    classifier_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], Net_classifier.get_purpose(), Net_classifier.class_alias + STATE_DICT_EXT)
+    features_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR],
+                                            Net_features.get_purpose(),
+                                            Net_features.save_model_name + WHOLE_NET_PARAMS_EXT)
+    features_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR],
+                                                 Net_features.get_purpose(),
+                                                 Net_features.save_model_name + STATE_DICT_EXT)
+    classifier_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR],
+                                              Net_classifier.get_purpose(),
+                                              Net_classifier.save_model_name + WHOLE_NET_PARAMS_EXT)
+    classifier_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR],
+                                                   Net_classifier.get_purpose(),
+                                                   Net_classifier.save_model_name + STATE_DICT_EXT)
     # Load Trained models
     Net_features = Net_features.load_whole_model(features_whole_save_path)
     Net_classifier = Net_classifier.load_whole_model(classifier_whole_save_path)
