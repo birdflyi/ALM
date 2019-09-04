@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Python 3.6
+import errno
 import shutil
 import os
 
@@ -13,7 +14,7 @@ __time__ = '2018/10/22 18:41'
 # move or rename
 def movefile(src_path, dest_path):
     if not os.path.isfile(src_path):
-        print("%s not exist!" % src_path)
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), src_path)
     else:
         fdir, fname = os.path.split(dest_path)
         createDirFromPathStr(fdir)
@@ -23,7 +24,7 @@ def movefile(src_path, dest_path):
 # move or rename files from src_dir: directories of src_dir will be ignored!
 def movefiles(src_dir, dest_dir):
     if not os.path.isdir(src_dir):
-        print("%s is not a directory!" % src_dir)
+        raise NotADirectoryError(errno.ENOENT, os.strerror(errno.ENOENT), src_dir)
     else:
         createDirFromPathStr(dest_dir)
         fileNames = os.listdir(src_dir)
@@ -36,7 +37,7 @@ def movefiles(src_dir, dest_dir):
 # move or rename files from src_dir recursively: dest_dir should not be existed!
 def movefiles_recursive(src_dir, dest_dir):
     if not os.path.isdir(src_dir):
-        print("%s is not a directory!" % src_dir)
+        raise NotADirectoryError(errno.ENOENT, os.strerror(errno.ENOENT), src_dir)
     else:
         shutil.copytree(src_dir, dest_dir, symlinks=False, ignore=None)
         shutil.rmtree(src_dir)

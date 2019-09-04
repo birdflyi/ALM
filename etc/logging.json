@@ -20,7 +20,7 @@
             "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "INFO",
             "formatter": "simple",
-            "filename": "InjuryNLP_App_Run_Info.log",
+            "filename": "ALM_App_Run_Info.log",
             "backupCount": 10,
             "when":"h",
             "encoding": "utf8"
@@ -30,7 +30,7 @@
             "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "ERROR",
             "formatter": "simple",
-            "filename": "InjuryNLP_App_Run_Error.log",
+            "filename": "ALM_App_Run_Error.log",
             "backupCount": 10,
             "when":"h",
             "encoding": "utf8"

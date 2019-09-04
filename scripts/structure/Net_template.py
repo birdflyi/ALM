@@ -28,8 +28,8 @@ class Net_template(nn.Module):
         self._save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
         self._save_pyfile_name = self.class_alias
         self.caller_pyfile_path = os.path.abspath(__file__)
-        self.save_model_name = replace_chars(self.name, [' ', '=', ')', '\n', '_features'], '')
-        self.save_model_name = self.save_model_name.replace('(', '__').replace(',', '_')
+        self.save_model_name = ''
+        self.reset_save_model_name()  # init self.save_model_name
         self.net_sequence = nn.Sequential()
         # summary for module: to describe the structure of net.
         self._net_flow_process = []

@@ -36,6 +36,3 @@ if __name__ == '__main__':
     model.summary()
     model.save_whole_model()
     model.save_state_dict_model()
-    # print messages of net
-    print(model.class_alias)
-    print(model.__dict__)

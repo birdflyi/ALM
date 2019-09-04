@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Python 3.6
+import errno
 import shutil
 import os
 
@@ -13,7 +14,7 @@ __time__ = '2018/10/22 18:47'
 # copy
 def copyfile(src_path, dest_path):
     if not os.path.isfile(src_path):
-        print("%s not exist!" % src_path)
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), src_path)
     else:
         fdir, fname = os.path.split(dest_path)
         createDirFromPathStr(fdir)
@@ -22,7 +23,7 @@ def copyfile(src_path, dest_path):
 
 def copyAllFilesInDir(src_dir, dest_dir):
     if not os.path.isdir(src_dir):
-        print("%s not exist!" % src_dir)
+        raise NotADirectoryError(errno.ENOENT, os.strerror(errno.ENOENT), src_dir)
     else:
         createDirFromPathStr(dest_dir)
         fileNames = os.listdir(src_dir)

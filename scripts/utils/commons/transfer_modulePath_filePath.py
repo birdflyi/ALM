@@ -24,7 +24,7 @@ def path_File2Module(file_path, absfilepath=False):
     if absfilepath:
         base_dir_path = BASE_DIR.replace('\\', '/')
         if not re.match(base_dir_path, file_path):
-            raise Warning('Cannot find "{}" with root path "{}", which will cause a fatal error '
+            raise Warning('Cannot find "{}" under the root path "{}", which will cause a fatal error '
                           'in the future.'.format(file_path, base_dir_path))
         module_path = file_path.replace(base_dir_path, '')
     else:

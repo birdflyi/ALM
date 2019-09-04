@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Python 3.6
-from etc.training_purposes import training_purposes, L_DIGITAL, R_ANALOG
+from etc.training_purposes import training_purposes, L_DIGITAL
 
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/18 11:12'

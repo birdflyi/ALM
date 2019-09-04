@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Python 3.6
 import importlib
+import logging
 import os
 
 import numpy as np
@@ -10,6 +11,7 @@ from torch.autograd import Variable
 
 from etc import training_purposes, filePathConf, extensions
 from scripts.model_editing_tools.Net_transfer import Net_transfer
+from scripts.utils import logUtils
 from scripts.utils.commons.dict_update import dict_update_left_join_recursive
 from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 from scripts.utils.fileUtils.move import movefile
@@ -17,6 +19,9 @@ from scripts.utils.fileUtils.move import movefile
 __author__ = 'Lou Zehua'
 __time__ = '2019/7/29 11:09'
 
+# init log default config
+logUtils.initLogDefaultConfig()
+logger = logging.getLogger(__name__)
 
 def validate_name_with_modulePath(module_path, net_name):
     if module_path and net_name:
@@ -65,27 +70,31 @@ def transfer_models(features_net_abspath, features_net_name,
     model_reload.save_state_dict_model()
     cur_save_model_path = model_reload._save_model_path
     model_reload.load_state_dict_model(cur_save_model_path)
+    cmd_str_python_run = lambda abs_path: 'python {}'.format(abs_path)
     if build_new_model:
         # cmd: python run
-        cmd_str = 'python {}'.format(net.save_pyfile_path)
-        os.system(cmd_str)
-        print('The model has been successfully built.')
-        # Move validated file
-        print('Move validated file to common nn scripts directory...')
+        cmd_str = cmd_str_python_run(net.save_pyfile_path)
+        os.system(cmd_str)  # rebuild and validate
+        logger.info('The model has been successfully built.')
+        # Move the validated python file
+        logger.info('Move the validated python file to common nn scripts directory...')
         src_path = net.save_pyfile_path
         dest_path = os.path.join(training_purposes.project_purposes_scriptsDir[net.get_purpose()],
                                  net.class_alias + extensions.ext_codes[extensions.EXT_CODES__PY])
         if os.path.exists(dest_path):
-            print('Target path exists a same name file. Moving file operation is canceled.')
+            logger.warning('Target path exists a same name file. Moving file operation is canceled.')
             caller_pyfile_path = src_path
         else:
-            movefile(src_path, dest_path)  # May effect on caller_pyfile_path and save_pyfile_path
-            print('Move file successfully.')
+            try:
+                movefile(src_path, dest_path)  # May effect on caller_pyfile_path and save_pyfile_path
+            except BaseException as e:
+                logger.error(e)
+            logger.info('Move file successfully.')
             caller_pyfile_path = dest_path
             # Rebuild model to update caller_pyfile_path
-            cmd_str = 'python {}'.format(dest_path)
+            cmd_str = cmd_str_python_run(dest_path)
             os.system(cmd_str)
-            print('rebuilt model successfully.')
+            logger.info('rebuilt model successfully.')
         # update model_reload
         Net_trans_module_path = path_File2Module(caller_pyfile_path, absfilepath=True)
         Net_trans_module = importlib.import_module(Net_trans_module_path)
