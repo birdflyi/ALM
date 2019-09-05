@@ -11,6 +11,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import filePathConf, extensions, training_purposes, code_style
+from etc.extensions import ext_models_key2str
 from etc.profiles import encoding
 from scripts.digital_layers.Net_step import Net_step
 from scripts.feature_fitting_layers.Net_not import Net_not
@@ -31,6 +32,7 @@ class Net_transfer(Net_template):
         # self.set_purposes(purpose)
         self.features_model, self.classifier_model = features_model, classifier_model
         self.auto_set_purpose(self.classifier_model)
+        self.save_model_mode = extensions.EXT_MODELS__STATE_DICT  # default save mode: state dict model must exist.
         self.name = self.name.replace(self.name.split('(')[0], class_alias)
         # 'class_alias' is used for the definition of a new model in a python file.
         self.class_alias = class_alias
@@ -56,7 +58,7 @@ class Net_transfer(Net_template):
     def rebuild_transfer_net_py(self):
         net_seq_models = list(self.get_net_dependent().values())
         net_seq_names = [net_model.name for net_model in net_seq_models]
-        self.caller_pyfile_path.replace('\\', '/')
+        self.caller_pyfile_abspath.replace('\\', '/')
         net_seq_import = [net_model.get_net_import_str() for net_model in net_seq_models]
         param_time = datetime.datetime.now()
         param_class_name = self.class_alias
@@ -64,14 +66,18 @@ class Net_transfer(Net_template):
         param_net_seq_import = '\n'.join(net_seq_import)
         param_input_size = self.net_sequence[0].in_features
         param_output_size = self.net_sequence[-1].in_features
-        args_pytmpl = [param_net_seq_import,
-                param_time,
-                param_class_name,
-                param_input_size,
-                param_output_size,
-                param_class_name,
-                param_net_sequence,
-                param_class_name]
+        param_save_model_mode = ext_models_key2str[self.save_model_mode]
+        args_pytmpl = [
+            param_net_seq_import,
+            param_time,
+            param_class_name,
+            param_input_size,
+            param_output_size,
+            param_class_name,
+            param_net_sequence,
+            param_class_name,
+            param_save_model_mode
+        ]
         with open(filePathConf.absPathDict[filePathConf.PY_NET_TEMPLATE_PATH], 'r', encoding=encoding) as f_temp:
             net_code_rebuild = f_temp.read()
         net_code_rebuild = net_code_rebuild.format(*args_pytmpl)
@@ -132,7 +138,7 @@ if __name__ == '__main__':
         net.in_features, net.out_features, transfer_model_class_alias)
     model_reload.__dict__.update(dict_update_left_join_recursive(model_reload.__dict__, net.__dict__))
     model_reload.save_state_dict_model()
-    cur_save_model_path = model_reload._save_model_path
+    cur_save_model_path = model_reload.save_model_path
     model_reload.load_state_dict_model(cur_save_model_path)
 
     # predict test
@@ -145,21 +151,22 @@ if __name__ == '__main__':
 
     # 3. Rebuild the result model
     net.rebuild_transfer_net_py()
+    cmd_str_python_run = lambda abs_path: 'python {}'.format(abs_path)
     if BUILD_NEW_MODEL:
-        cmd_str = 'python {}'.format(net.save_pyfile_path)
+        cmd_str = cmd_str_python_run(net.save_pyfile_path)
         os.system(cmd_str)
         print('The model has been successfully built.')
         # Move validated file
         print('Move validated file to common nn scripts directory...')
         src_path = net.save_pyfile_path
         dest_path = os.path.join(training_purposes.project_purposes_scriptsDir[net.get_purpose()],
-            net.class_alias + extensions.ext_codes[extensions.EXT_CODES__PY])
+                                 net.class_alias + extensions.ext_codes[extensions.EXT_CODES__PY])
         if os.path.exists(dest_path):
             print('Target path exists a same name file. Moving file operation is canceled.')
         else:
             movefile(src_path, dest_path)
             print('Move file successfully.')
             # Rebuild model to update caller_pyfile_path
-            cmd_str = 'python {}'.format(dest_path)
+            cmd_str = cmd_str_python_run(dest_path)
             os.system(cmd_str)
             print('rebuilt model successfully.')

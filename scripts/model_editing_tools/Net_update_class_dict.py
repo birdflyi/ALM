@@ -10,6 +10,7 @@ from scripts.feature_fitting_layers.Net_and import Net_and
 from scripts.feature_fitting_layers.Net_multiply import Net_multiply
 from scripts.feature_fitting_layers.Net_not import Net_not
 from scripts.feature_fitting_layers.Net_or import Net_or
+from scripts.feature_fitting_layers.Net_pass import Net_pass
 from scripts.feature_fitting_layers.Net_signal import Net_signal
 from scripts.structure.Net_template import Net_template
 from scripts.utils.commons.dict_update import dict_update_left_join_recursive
@@ -65,7 +66,8 @@ if __name__ == '__main__':
     src_model = Net_step()
     STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
     WHOLE_NET_PARAMS_EXT = extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS]
-    features_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR], src_model.get_purpose(), src_model.class_alias + WHOLE_NET_PARAMS_EXT)
+    features_whole_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR],
+                                            src_model.get_purpose(), src_model.save_model_name + WHOLE_NET_PARAMS_EXT)
     model_reload = update_models(src_model, features_whole_save_path, state_dict_mode=False)
     print(model_reload.state_dict())
     print(model_reload.__dict__)

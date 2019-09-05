@@ -25,6 +25,9 @@ SCRIPTS_ROOT_DIR = 20
 SCRIPTS_FEATURE_FITTING_LAYERS_DIR = 21
 SCRIPTS_DIGITAL_LAYERS_DIR = 22
 
+# --------------------register model--------------------
+MODEL_REGISTRY_PATH = 100
+
 # Each directory should be named with a suffix '_DIR'!
 absPathDict = {
     MODELS_STATE_DICT_DIR: os.path.join(BASE_DIR, 'models/models_state_dict/'),
@@ -34,6 +37,7 @@ absPathDict = {
     SCRIPTS_ROOT_DIR: os.path.join(BASE_DIR, 'scripts/'),
     SCRIPTS_FEATURE_FITTING_LAYERS_DIR: os.path.join(BASE_DIR, 'scripts/feature_fitting_layers/'),
     SCRIPTS_DIGITAL_LAYERS_DIR: os.path.join(BASE_DIR, 'scripts/digital_layers/'),
+    MODEL_REGISTRY_PATH: os.path.join(BASE_DIR, 'models/model_registry.csv'),
 }
 
 fileNameDict = {k: v.replace('\\', '/').split('/')[-1] for k, v in absPathDict.items()}

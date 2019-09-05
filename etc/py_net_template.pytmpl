@@ -26,13 +26,12 @@ class {}(Net_template):
 
 if __name__ == '__main__':
     net = {}()
-    # save and load model pairs
-    save_dir = filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR]
-    ext_state_dict = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
-    net.reset_save_model_path(save_dir=save_dir, save_mode=extensions.EXT_MODELS__STATE_DICT)
-    model = net.load_state_dict_model(net._save_model_path)
+    # load, save and register model
+    net.auto_set_save_model_path(extensions.{})
+    model = net.load_state_dict_model(net.save_model_path)
     model.set_caller_pyfile_path(os.path.abspath(__file__))
     model.check_purpose()
     model.summary()
     model.save_whole_model()
     model.save_state_dict_model()
+    model.register_net()

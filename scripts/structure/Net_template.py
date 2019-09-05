@@ -8,7 +8,10 @@ import torch
 import torch.nn as nn
 
 from etc import filePathConf, extensions
+from etc.model_registry_settings import df_registry_col_names, CLASS_ALIAS, REL_CALLER_PYFILE_PATH
+from etc.profiles import BASE_DIR
 from etc.training_purposes import training_purposes, R_ANALOG
+from scripts import df_registry, model_registry_path
 from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 from scripts.utils.stringUtils.replace_chars import replace_chars
 
@@ -17,6 +20,12 @@ __time__ = '2019/7/25 16:39'
 
 
 class Net_template(nn.Module):
+
+    models_save_dir = {
+        extensions.EXT_MODELS__STATE_DICT: filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR],
+        extensions.EXT_MODELS__WHOLE_NET_PARAMS: filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR]
+    }
+
     def __init__(self, in_features, out_features, class_alias):
         super(Net_template, self).__init__()
         self.in_features = in_features
@@ -25,9 +34,10 @@ class Net_template(nn.Module):
         self._purpose = ''  # It is important for Net_transfer and atomic models.
         self.name = self.__str__()
         self.class_alias = class_alias or self.name.split('(')[0]
-        self._save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
+        self.save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
         self._save_pyfile_name = self.class_alias
-        self.caller_pyfile_path = os.path.abspath(__file__)
+        self.caller_pyfile_abspath = os.path.abspath(__file__)
+        self.caller_pyfile_relpath = os.path.relpath(__file__)
         self.save_model_name = ''
         self.reset_save_model_name()  # init self.save_model_name
         self.net_sequence = nn.Sequential()
@@ -64,10 +74,15 @@ class Net_template(nn.Module):
             self._purpose = purpose
 
     def get_caller_pyfile_path(self):
-        return self.caller_pyfile_path
+        return self.caller_pyfile_abspath
 
     def set_caller_pyfile_path(self, path):
-        self.caller_pyfile_path = path
+        self.caller_pyfile_abspath = path
+        # set caller_pyfile_relpath based on caller_pyfile_abspath
+        caller_pyfile_relpath = self.caller_pyfile_abspath.replace('\\', '/')
+        caller_pyfile_relpath = caller_pyfile_relpath.replace(BASE_DIR.replace('\\', '/'), '')
+        caller_pyfile_relpath = caller_pyfile_relpath.strip('/')
+        self.caller_pyfile_relpath = caller_pyfile_relpath
 
     def check_purpose(self):
         purpose = training_purposes[R_ANALOG]  # Default set as R_ANALOG
@@ -148,37 +163,44 @@ class Net_template(nn.Module):
     def save_state_dict_model(self, path=None):
         if path:
             self.save_model_name = path.replace('\\', '/').split('/')[-1].split('.')[0]
-            self._save_model_path = path
+            self.save_model_path = path
         else:
             save_dir = filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR]
-            self.reset_save_model_path(save_dir, extensions.EXT_MODELS__STATE_DICT)
-        torch.save(self.state_dict(), self._save_model_path)
+            self.set_save_model_path(save_dir, extensions.EXT_MODELS__STATE_DICT)
+        torch.save(self.state_dict(), self.save_model_path)
 
     def save_whole_model(self, path=None):
         if path:
             self.save_model_name = path.replace('\\', '/').split('/')[-1].split('.')[0]
-            self._save_model_path = path
+            self.save_model_path = path
         else:
             save_dir = filePathConf.absPathDict[filePathConf.MODELS_WHOLE_NET_PARAMS_DIR]
-            self.reset_save_model_path(save_dir, extensions.EXT_MODELS__WHOLE_NET_PARAMS)
-        torch.save(self, self._save_model_path)
+            self.set_save_model_path(save_dir, extensions.EXT_MODELS__WHOLE_NET_PARAMS)
+        torch.save(self, self.save_model_path)
 
     def load_state_dict_model(self, path=None):
         model = self
-        self._save_model_path = path or self._save_model_path
-        model.load_state_dict(torch.load(self._save_model_path))
+        self.save_model_path = path or self.save_model_path
+        model.load_state_dict(torch.load(self.save_model_path))
         return model
 
     def load_whole_model(self, path=None):
-        self._save_model_path = path or self._save_model_path
-        model = torch.load(self._save_model_path)
+        self.save_model_path = path or self.save_model_path
+        model = torch.load(self.save_model_path)
         model.eval()
         return model
 
-    def reset_save_model_path(self, save_dir, save_mode):
+    def auto_set_save_model_path(self, save_mode):
+        if save_mode in self.models_save_dir.keys():
+            self.set_save_model_path(save_dir=self.models_save_dir[save_mode], save_mode=save_mode)
+        else:
+            msg = 'Unknown save mode! Please set the save_model_path manually later.'
+            raise Warning(msg)
+
+    def set_save_model_path(self, save_dir, save_mode):
         if self._purpose:
-            self._save_model_path = os.path.join(save_dir, self._purpose,
-                self.save_model_name + extensions.ext_models[save_mode])
+            self.save_model_path = os.path.join(save_dir, self._purpose,
+                                                self.save_model_name + extensions.ext_models[save_mode])
         else:
             msg = 'You must decide whether the model is training for regression (with a continuous output) ' \
                   'or classification (with a discrete output). Set purposes to any one of that with set_purpose.'
@@ -192,6 +214,30 @@ class Net_template(nn.Module):
         import_module_path = path_File2Module(self.get_caller_pyfile_path(), absfilepath=True)
         import_fmt_str = 'from {} import {}'.format(import_module_path, self.class_alias)
         return import_fmt_str
+
+    # register net base on the relative path.
+    def register_net(self):
+        col_name__class_alias = df_registry_col_names[CLASS_ALIAS]
+        col_name__rel_caller_pyfile_path = df_registry_col_names[REL_CALLER_PYFILE_PATH]
+        temp_record = {
+            col_name__class_alias: self.class_alias,
+            col_name__rel_caller_pyfile_path: self.caller_pyfile_relpath
+        }
+        # delete the obsoleted records: each py file should have a unique class alias.
+        if self.is_registered():
+            registered_ids = df_registry[df_registry[col_name__rel_caller_pyfile_path] ==
+                                         self.caller_pyfile_relpath].index.tolist()
+            df_registry_del_conflicts = df_registry.drop(list(registered_ids))
+        else:
+            df_registry_del_conflicts = df_registry
+        # add new records for current py file
+        df_registered = df_registry_del_conflicts.append(temp_record, ignore_index=True)
+        df_registered.to_csv(model_registry_path, sep=',', header=None, index=False)
+
+    def is_registered(self):
+        # the identifier is field "rel_caller_pyfile_path"
+        registered_rel_caller_pyfile_path = list(df_registry[df_registry_col_names[REL_CALLER_PYFILE_PATH]])
+        return self.caller_pyfile_relpath in registered_rel_caller_pyfile_path
 
     def extra_repr(self):
         return 'in_features={}, out_features={}'.format(

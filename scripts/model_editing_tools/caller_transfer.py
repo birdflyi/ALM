@@ -10,6 +10,9 @@ import torch
 from torch.autograd import Variable
 
 from etc import training_purposes, filePathConf, extensions
+from etc.model_registry_settings import df_registry_col_names, CLASS_ALIAS, REL_CALLER_PYFILE_PATH
+from etc.profiles import BASE_DIR
+from scripts import df_registry
 from scripts.model_editing_tools.Net_transfer import Net_transfer
 from scripts.utils import logUtils
 from scripts.utils.commons.dict_update import dict_update_left_join_recursive
@@ -30,9 +33,25 @@ def validate_name_with_modulePath(module_path, net_name):
     return False
 
 
-def transfer_models(features_net_abspath, features_net_name,
-                    classifier_net_abspath, classifier_net_name,
-                    transfer_model_class_alias, build_new_model=True):
+def get_net_caller_pyfile_abspath(net_class_alias):
+    net_caller_pyfile_abspath = ''
+    col_name__class_alias = df_registry_col_names[CLASS_ALIAS]
+    col_name__rel_caller_pyfile_path = df_registry_col_names[REL_CALLER_PYFILE_PATH]
+    registered_ids = df_registry[df_registry[col_name__class_alias] == net_class_alias].index.tolist()
+    if len(registered_ids):
+        registered_id = predict_registered_id(registered_ids)
+        net_caller_pyfile_relpath = df_registry[col_name__rel_caller_pyfile_path][registered_id]
+        net_caller_pyfile_abspath = os.path.join(BASE_DIR, net_caller_pyfile_relpath)
+    return net_caller_pyfile_abspath
+
+# todo: predict use model
+def predict_registered_id(registered_ids):
+    return registered_ids[0]
+
+def transfer_models(features_net_name, classifier_net_name, transfer_model_class_alias,
+                    features_net_abspath=None, classifier_net_abspath=None, build_new_model=True):
+    features_net_abspath = features_net_abspath or get_net_caller_pyfile_abspath(features_net_name)
+    classifier_net_abspath = classifier_net_abspath or get_net_caller_pyfile_abspath(classifier_net_name)
     # 1. Auto load source nn models
     # Auto import python modules
     features_module_path = path_File2Module(features_net_abspath, absfilepath=True)
@@ -68,7 +87,7 @@ def transfer_models(features_net_abspath, features_net_name,
         net.in_features, net.out_features, transfer_model_class_alias)
     model_reload.__dict__.update(dict_update_left_join_recursive(model_reload.__dict__, net.__dict__))
     model_reload.save_state_dict_model()
-    cur_save_model_path = model_reload._save_model_path
+    cur_save_model_path = model_reload.save_model_path
     model_reload.load_state_dict_model(cur_save_model_path)
     cmd_str_python_run = lambda abs_path: 'python {}'.format(abs_path)
     if build_new_model:
@@ -104,18 +123,24 @@ def transfer_models(features_net_abspath, features_net_name,
     return model_reload
 
 
+def is_registered(class_alias):
+    col_name__class_alias = df_registry_col_names[CLASS_ALIAS]
+    registered_class_aliases = list(df_registry[col_name__class_alias])
+    return class_alias in registered_class_aliases
+
+
 if __name__ == '__main__':
     # 1. Transfer settings
-    features_net_abspath = 'E:\\Users\\zhlou\\PycharmProjects\\ALM\\scripts\\feature_fitting_layers\\Net_not.py'
     features_net_name = 'Net_not'
-    classifier_net_abspath = 'E:\\Users\\zhlou\\PycharmProjects\\ALM\\scripts\\digital_layers\\Net_step.py'
     classifier_net_name = 'Net_step'
     transfer_model_class_alias = 'Net_not_AD'
-    BUILD_NEW_MODEL = True
+    # features_net_abspath = 'E:\\Users\\zhlou\\PycharmProjects\\ALM\\scripts\\feature_fitting_layers\\Net_not.py'
+    # classifier_net_abspath = 'E:\\Users\\zhlou\\PycharmProjects\\ALM\\scripts\\digital_layers\\Net_step.py'
+    build_new_model = True
     # 2. Transfer models
-    transfered_model = transfer_models(features_net_abspath, features_net_name,
-                                       classifier_net_abspath, classifier_net_name,
-                                       transfer_model_class_alias, build_new_model=BUILD_NEW_MODEL)
+    transfered_model = transfer_models(features_net_name, classifier_net_name, transfer_model_class_alias,
+                                       # features_net_abspath, classifier_net_abspath,
+                                       build_new_model=build_new_model)
     # test for transfered_model
     # input
     N = 100
