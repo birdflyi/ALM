@@ -151,8 +151,8 @@ if __name__ == '__main__':
 
     # 3. Rebuild the result model
     net.rebuild_transfer_net_py()
-    cmd_str_python_run = lambda abs_path: 'python {}'.format(abs_path)
     if BUILD_NEW_MODEL:
+        cmd_str_python_run = lambda abs_path: 'python {}'.format(abs_path)
         cmd_str = cmd_str_python_run(net.save_pyfile_path)
         os.system(cmd_str)
         print('The model has been successfully built.')

@@ -26,6 +26,7 @@ __time__ = '2019/7/29 11:09'
 logUtils.initLogDefaultConfig()
 logger = logging.getLogger(__name__)
 
+
 def validate_name_with_modulePath(module_path, net_name):
     if module_path and net_name:
         if module_path.split('.')[-1] == net_name:
@@ -44,9 +45,12 @@ def get_net_caller_pyfile_abspath(net_class_alias):
         net_caller_pyfile_abspath = os.path.join(BASE_DIR, net_caller_pyfile_relpath)
     return net_caller_pyfile_abspath
 
+
 # todo: predict use model
 def predict_registered_id(registered_ids):
-    return registered_ids[0]
+    # use the latest registered model
+    return registered_ids[-1]
+
 
 def transfer_models(features_net_name, classifier_net_name, transfer_model_class_alias,
                     features_net_abspath=None, classifier_net_abspath=None, build_new_model=True):
@@ -89,8 +93,8 @@ def transfer_models(features_net_name, classifier_net_name, transfer_model_class
     model_reload.save_state_dict_model()
     cur_save_model_path = model_reload.save_model_path
     model_reload.load_state_dict_model(cur_save_model_path)
-    cmd_str_python_run = lambda abs_path: 'python {}'.format(abs_path)
     if build_new_model:
+        cmd_str_python_run = lambda abs_path: 'python {}'.format(abs_path)
         # cmd: python run
         cmd_str = cmd_str_python_run(net.save_pyfile_path)
         os.system(cmd_str)  # rebuild and validate
@@ -121,12 +125,6 @@ def transfer_models(features_net_name, classifier_net_name, transfer_model_class
             net.in_features, net.out_features, transfer_model_class_alias)
         model_reload.load_state_dict_model(cur_save_model_path)
     return model_reload
-
-
-def is_registered(class_alias):
-    col_name__class_alias = df_registry_col_names[CLASS_ALIAS]
-    registered_class_aliases = list(df_registry[col_name__class_alias])
-    return class_alias in registered_class_aliases
 
 
 if __name__ == '__main__':
