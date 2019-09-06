@@ -37,7 +37,8 @@ class Net_template(nn.Module):
         self.save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
         self._save_pyfile_name = self.class_alias
         self.caller_pyfile_abspath = os.path.abspath(__file__)
-        self.caller_pyfile_relpath = os.path.relpath(__file__)
+        self.caller_pyfile_relpath = ''
+        self.set_caller_pyfile_path(self.caller_pyfile_abspath)
         self.save_model_name = ''
         self.reset_save_model_name()  # init self.save_model_name
         self.net_sequence = nn.Sequential()
@@ -233,6 +234,14 @@ class Net_template(nn.Module):
         # add new records for current py file
         df_registered = df_registry_del_conflicts.append(temp_record, ignore_index=True)
         df_registered.to_csv(model_registry_path, sep=',', header=None, index=False)
+
+    def unregister_net(self):
+        col_name__rel_caller_pyfile_path = df_registry_col_names[REL_CALLER_PYFILE_PATH]
+        if self.is_registered():
+            registered_ids = df_registry[df_registry[col_name__rel_caller_pyfile_path] ==
+                                         self.caller_pyfile_relpath].index.tolist()
+            df_registry_unregistered = df_registry.drop(list(registered_ids))
+            df_registry_unregistered.to_csv(model_registry_path, sep=',', header=None, index=False)
 
     def is_registered(self):
         # the identifier is field "rel_caller_pyfile_path"

@@ -104,22 +104,23 @@ def transfer_models(features_net_name, classifier_net_name, transfer_model_class
         src_path = net.save_pyfile_path
         dest_path = os.path.join(training_purposes.project_purposes_scriptsDir[net.get_purpose()],
                                  net.class_alias + extensions.ext_codes[extensions.EXT_CODES__PY])
+        model_reload.set_caller_pyfile_path(src_path)
         if os.path.exists(dest_path):
             logger.warning('Target path exists a same name file. Moving file operation is canceled.')
-            caller_pyfile_path = src_path
         else:
             try:
+                model_reload.unregister_net()
                 movefile(src_path, dest_path)  # May effect on caller_pyfile_path and save_pyfile_path
             except BaseException as e:
                 logger.error(e)
             logger.info('Move file successfully.')
-            caller_pyfile_path = dest_path
+            model_reload.set_caller_pyfile_path(dest_path)
             # Rebuild model to update caller_pyfile_path
             cmd_str = cmd_str_python_run(dest_path)
             os.system(cmd_str)
             logger.info('rebuilt model successfully.')
         # update model_reload
-        Net_trans_module_path = path_File2Module(caller_pyfile_path, absfilepath=True)
+        Net_trans_module_path = path_File2Module(model_reload.caller_pyfile_abspath, absfilepath=True)
         Net_trans_module = importlib.import_module(Net_trans_module_path)
         model_reload = getattr(Net_trans_module, transfer_model_class_alias)(
             net.in_features, net.out_features, transfer_model_class_alias)

@@ -10,5 +10,4 @@ Net_and_AD,scripts/auto_learned_recently/Net_and_AD.py
 Net_and_AD,scripts/digital_layers/Net_and_AD.py
 Net_or_AD,scripts/auto_learned_recently/Net_or_AD.py
 Net_or_AD,scripts/digital_layers/Net_or_AD.py
-Net_not_AD,scripts/auto_learned_recently/Net_not_AD.py
 Net_not_AD,scripts/digital_layers/Net_not_AD.py
