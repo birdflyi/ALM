@@ -8,8 +8,8 @@ __time__ = '2019/7/26 11:16'
 
 # Define extensions of files
 # -------------------------------------------------extensions of models-------------------------------------------------
-EXT_MODELS__STATE_DICT = 0
-EXT_MODELS__WHOLE_NET_PARAMS = 1
+EXT_MODELS__STATE_DICT = 1
+EXT_MODELS__WHOLE_NET_PARAMS = 2
 ext_models_key2str = {
     EXT_MODELS__STATE_DICT: 'EXT_MODELS__STATE_DICT',
     EXT_MODELS__WHOLE_NET_PARAMS: 'EXT_MODELS__WHOLE_NET_PARAMS',

@@ -34,6 +34,7 @@ class Net_template(nn.Module):
         self._purpose = ''  # It is important for Net_transfer and atomic models.
         self.name = self.__str__()
         self.class_alias = class_alias or self.name.split('(')[0]
+        self._save_mode = extensions.EXT_MODELS__STATE_DICT
         self.save_model_path = ''  # There's only 1 param to store path, thus save and load should be called in pairs.
         self._save_pyfile_name = self.class_alias
         self.caller_pyfile_abspath = os.path.abspath(__file__)
@@ -161,6 +162,25 @@ class Net_template(nn.Module):
         out = self.net_sequence(input)
         return out
 
+    def set_save_mode(self, save_mode=None):
+        if save_mode and save_mode not in extensions.ext_models.keys():
+            raise Warning('The save_mode of the model must be a key of {}.'.format(extensions.ext_models.keys()))
+        self._save_mode = save_mode or self._save_mode
+
+    def save_model(self, save_mode=None):
+        self.auto_set_save_model_path(save_mode)
+        if self._save_mode == extensions.EXT_MODELS__STATE_DICT:
+            self.save_state_dict_model()
+        elif self._save_mode == extensions.EXT_MODELS__WHOLE_NET_PARAMS:
+            self.save_whole_model()
+
+    def load_model(self):
+        self.auto_set_save_model_path()
+        if self._save_mode == extensions.EXT_MODELS__STATE_DICT:
+            self.load_state_dict_model()
+        elif self._save_mode == extensions.EXT_MODELS__WHOLE_NET_PARAMS:
+            self.load_whole_model()
+
     def save_state_dict_model(self, path=None):
         if path:
             self.save_model_name = path.replace('\\', '/').split('/')[-1].split('.')[0]
@@ -191,9 +211,10 @@ class Net_template(nn.Module):
         model.eval()
         return model
 
-    def auto_set_save_model_path(self, save_mode):
-        if save_mode in self.models_save_dir.keys():
-            self.set_save_model_path(save_dir=self.models_save_dir[save_mode], save_mode=save_mode)
+    def auto_set_save_model_path(self, save_mode=None):
+        self.set_save_mode(save_mode)
+        if self._save_mode in self.models_save_dir.keys():
+            self.set_save_model_path(save_dir=self.models_save_dir[self._save_mode], save_mode=self._save_mode)
         else:
             msg = 'Unknown save mode! Please set the save_model_path manually later.'
             raise Warning(msg)
