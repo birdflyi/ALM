@@ -13,10 +13,8 @@ import torch.nn as nn
 from etc import filePathConf, extensions, training_purposes, code_style
 from etc.extensions import ext_models_key2str
 from etc.profiles import encoding
-from scripts.digital_layers.Net_step import Net_step
-from scripts.feature_fitting_layers.Net_not import Net_not
 from scripts.structure.Net_template import Net_template
-from scripts.utils.commons.dict_update import dict_update_left_join_recursive
+from scripts.utils.commons.dict_update import dict_update_left_merge_recursive
 from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 from scripts.utils.fileUtils.move import movefile
 
@@ -86,6 +84,8 @@ class Net_transfer(Net_template):
 
 
 if __name__ == '__main__':
+    from scripts.digital_layers.Net_step import Net_step
+    from scripts.feature_fitting_layers.Net_not import Net_not
     # 1. Transfer settings
     BUILD_NEW_MODEL = True
     Net_features = Net_not()
@@ -136,8 +136,8 @@ if __name__ == '__main__':
     Net_trans_module = importlib.import_module(Net_trans_module_path)
     model_reload = getattr(Net_trans_module, transfer_model_class_alias)(
         net.in_features, net.out_features, transfer_model_class_alias)
-    model_reload.__dict__.update(dict_update_left_join_recursive(model_reload.__dict__, net.__dict__))
-    model_reload.save_state_dict_model()
+    model_reload.__dict__.update(dict_update_left_merge_recursive(model_reload.__dict__, net.__dict__))
+    model_reload._save_state_dict_model()
     cur_save_model_path = model_reload.save_model_path
     model_reload.load_state_dict_model(cur_save_model_path)
 

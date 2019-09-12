@@ -9,13 +9,14 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
-from etc import training_purposes, filePathConf, extensions
+from etc import training_purposes, extensions
 from etc.model_registry_settings import df_registry_col_names, CLASS_ALIAS, REL_CALLER_PYFILE_PATH
 from etc.profiles import BASE_DIR
 from scripts import df_registry
 from scripts.model_editing_tools.Net_transfer import Net_transfer
+from scripts.model_editing_tools.Net_update_class_dict import Net_update_class_dict
 from scripts.utils import logUtils
-from scripts.utils.commons.dict_update import dict_update_left_join_recursive
+from scripts.utils.commons.dict_update import dict_update_left_merge_recursive
 from scripts.utils.commons.transfer_modulePath_filePath import path_File2Module
 from scripts.utils.fileUtils.move import movefile
 
@@ -70,17 +71,18 @@ def transfer_models(features_net_name, classifier_net_name, transfer_model_class
     # Init models
     Net_features = getattr(features_pymodule, features_net_name)()
     Net_classifier = getattr(classifier_pymodule, classifier_net_name)()
-    # Const extension strings
-    STATE_DICT_EXT = extensions.ext_models[extensions.EXT_MODELS__STATE_DICT]
-    features_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR],
-                                                 Net_features.get_purpose(),
-                                                 Net_features.save_model_name + STATE_DICT_EXT)
-    classifier_state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR],
-                                                   Net_classifier.get_purpose(),
-                                                   Net_classifier.save_model_name + STATE_DICT_EXT)
+    # Update models
+    net_update_tool = Net_update_class_dict(Net_features)
+    net_update_tool.update_models()
+    Net_features = net_update_tool.model
+    net_update_tool = Net_update_class_dict(Net_classifier)
+    net_update_tool.update_models()
+    Net_classifier = net_update_tool.model
     # Load Trained models
-    Net_features = Net_features.load_state_dict_model(features_state_dict_save_path)
-    Net_classifier = Net_classifier.load_state_dict_model(classifier_state_dict_save_path)
+    Net_features.set_save_mode(extensions.EXT_MODELS__STATE_DICT)
+    Net_classifier.set_save_mode(extensions.EXT_MODELS__STATE_DICT)
+    Net_features = Net_features.load_model()
+    Net_classifier = Net_classifier.load_model()
     # 2. Create a Net_transfer object
     net = Net_transfer(Net_features, Net_classifier, transfer_model_class_alias)
     # 3. Rebuild the result model
@@ -89,8 +91,8 @@ def transfer_models(features_net_name, classifier_net_name, transfer_model_class
     Net_trans_module = importlib.import_module(Net_trans_module_path)
     model_reload = getattr(Net_trans_module, transfer_model_class_alias)(
         net.in_features, net.out_features, transfer_model_class_alias)
-    model_reload.__dict__.update(dict_update_left_join_recursive(model_reload.__dict__, net.__dict__))
-    model_reload.save_state_dict_model()
+    model_reload.__dict__.update(dict_update_left_merge_recursive(model_reload.__dict__, net.__dict__))
+    model_reload._save_state_dict_model()
     cur_save_model_path = model_reload.save_model_path
     model_reload.load_state_dict_model(cur_save_model_path)
     if build_new_model:

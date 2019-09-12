@@ -5,7 +5,7 @@ import os
 
 import torch.nn as nn
 
-from etc import filePathConf, extensions
+from etc import extensions
 
 {}
 from scripts.structure.Net_template import Net_template
@@ -27,11 +27,12 @@ class {}(Net_template):
 if __name__ == '__main__':
     net = {}()
     # load, save and register model
-    net.auto_set_save_model_path(extensions.{})
-    model = net.load_state_dict_model(net.save_model_path)
+    net.set_save_mode(extensions.{})
+    model = net.load_model()
     model.set_caller_pyfile_path(os.path.abspath(__file__))
     model.check_purpose()
     model.summary()
-    model.save_whole_model()
-    model.save_state_dict_model()
+    for temp_save_mode in extensions.ext_models.keys():
+        model.set_save_mode(temp_save_mode)
+        model.save_model()
     model.register_net()

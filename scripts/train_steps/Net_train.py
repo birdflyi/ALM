@@ -77,8 +77,6 @@ if __name__ == '__main__':
 
     times_try = 0
     temp_net = Net_and()
-
-
     for i in range(total_try):
         times_try = i
         # net
@@ -95,23 +93,27 @@ if __name__ == '__main__':
         acc_float = sum(y_pred_array == y_target_array)/x_input.size(0)
         if acc_float == 1.0:
             break
-    if UPDATE_MODEL:
-        if times_try < total_try:
-            temp_net.set_save_mode(extensions.EXT_MODELS__WHOLE_NET_PARAMS)
-            temp_net.save_model()
-            temp_net.set_save_mode(extensions.EXT_MODELS__STATE_DICT)
-            temp_net.save_model()
-    # accuracy
-    y_pred = temp_net.forward(x_input) > act_threshold
-    y_pred_array = np.array(y_pred.detach().numpy())
-    logger.info(sum(y_pred_array == y_target_array)/x_input.size(0))
-    logger.info(temp_net.state_dict())
+    # current accuracy
+    y_pred_current_model = temp_net.forward(x_input) > act_threshold
+    y_pred_array_current_model = np.array(y_pred_current_model.detach().numpy())
+    acc_float_current_model = sum(y_pred_array_current_model == y_target_array) / x_input.size(0)
     # reload model
     reload_model = Net_and()
     reload_model.set_save_mode(extensions.EXT_MODELS__STATE_DICT)
     reload_model.load_model()
-    y_pred = reload_model.forward(x_input) > act_threshold
-    y_pred_array = np.array(y_pred.detach().numpy())
-    logger.info(sum(y_pred_array == y_target_array)/x_input.size(0))
+    y_pred_reload_model = reload_model.forward(x_input) > act_threshold
+    y_pred_array_reload_model = np.array(y_pred_reload_model.detach().numpy())
+    acc_float_reload_model = sum(y_pred_array_reload_model == y_target_array) / x_input.size(0)
+    update_flag = False
+    if times_try < total_try or acc_float_current_model > acc_float_reload_model:
+        if UPDATE_MODEL:
+            temp_net.set_save_mode(extensions.EXT_MODELS__WHOLE_NET_PARAMS)
+            temp_net.save_model()
+            temp_net.set_save_mode(extensions.EXT_MODELS__STATE_DICT)
+            temp_net.save_model()
+            reload_model = temp_net
+            updated_flag = True
+    logger.info('Reload Accuracy:{},Current Accuracy: {}, Update: {}'.format(
+        acc_float_reload_model, acc_float_current_model, update_flag))
     logger.info(reload_model.state_dict())
     logger.info(reload_model.__dict__)

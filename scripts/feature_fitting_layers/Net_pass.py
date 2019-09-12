@@ -21,7 +21,7 @@ threshold = 0
 
 
 class Net_pass(Net_template):
-    def __init__(self, in_features, out_features=None, class_alias=None):
+    def __init__(self, in_features=None, out_features=None, class_alias=None):
         out_features = out_features or in_features
         super().__init__(in_features, out_features, class_alias)
         self.is_atomic = True
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     x_input_array = np.array(2 * torch.rand(N, 1) - 1)
     x_input = Variable(torch.from_numpy(x_input_array)).float()
     # output
-    net = Net_pass(1)
+    net = Net_pass()
     output = net(x_input)
     # target
     label = []
@@ -53,8 +53,8 @@ if __name__ == '__main__':
                                    net.save_model_name + extensions.ext_models[extensions.EXT_MODELS__WHOLE_NET_PARAMS])
     state_dict_save_path = os.path.join(filePathConf.absPathDict[filePathConf.MODELS_STATE_DICT_DIR], training_purpose,
                                         net.save_model_name + extensions.ext_models[extensions.EXT_MODELS__STATE_DICT])
-    net.save_whole_model(path=whole_save_path)
-    net.save_state_dict_model(path=state_dict_save_path)
+    net._save_whole_model(path=whole_save_path)
+    net._save_state_dict_model(path=state_dict_save_path)
     # load model
     model_whole = net.load_whole_model(path=whole_save_path)
     # model_whole = net.load_state_dict_model(path=state_dict_save_path)

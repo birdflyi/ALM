@@ -6,8 +6,6 @@ Net_or,scripts/feature_fitting_layers/Net_or.py
 Net_pass,scripts/feature_fitting_layers/Net_pass.py
 Net_signal,scripts/feature_fitting_layers/Net_signal.py
 Net_step,scripts/digital_layers/Net_step.py
-Net_and_AD,scripts/auto_learned_recently/Net_and_AD.py
-Net_and_AD,scripts/digital_layers/Net_and_AD.py
-Net_or_AD,scripts/auto_learned_recently/Net_or_AD.py
-Net_or_AD,scripts/digital_layers/Net_or_AD.py
 Net_not_AD,scripts/digital_layers/Net_not_AD.py
+Net_and_AD,scripts/digital_layers/Net_and_AD.py
+Net_or_AD,scripts/digital_layers/Net_or_AD.py

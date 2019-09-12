@@ -163,6 +163,11 @@ class Net_template(nn.Module):
         return out
 
     def set_save_mode(self, save_mode=None):
+        """
+        Set save_mode=None if you want to keep save_mode the default value: extensions.EXT_MODELS__STATE_DICT
+        :param save_mode: A value belongs to list extensions.ext_models.keys()
+        :return: None
+        """
         if save_mode and save_mode not in extensions.ext_models.keys():
             raise Warning('The save_mode of the model must be a key of {}.'.format(extensions.ext_models.keys()))
         self._save_mode = save_mode or self._save_mode
@@ -170,18 +175,20 @@ class Net_template(nn.Module):
     def save_model(self, save_mode=None):
         self.auto_set_save_model_path(save_mode)
         if self._save_mode == extensions.EXT_MODELS__STATE_DICT:
-            self.save_state_dict_model()
+            self._save_state_dict_model()
         elif self._save_mode == extensions.EXT_MODELS__WHOLE_NET_PARAMS:
-            self.save_whole_model()
+            self._save_whole_model()
 
     def load_model(self):
         self.auto_set_save_model_path()
+        model = self
         if self._save_mode == extensions.EXT_MODELS__STATE_DICT:
-            self.load_state_dict_model()
+            model = self.load_state_dict_model()
         elif self._save_mode == extensions.EXT_MODELS__WHOLE_NET_PARAMS:
-            self.load_whole_model()
+            model = self.load_whole_model()
+        return model
 
-    def save_state_dict_model(self, path=None):
+    def _save_state_dict_model(self, path=None):
         if path:
             self.save_model_name = path.replace('\\', '/').split('/')[-1].split('.')[0]
             self.save_model_path = path
@@ -190,7 +197,7 @@ class Net_template(nn.Module):
             self.set_save_model_path(save_dir, extensions.EXT_MODELS__STATE_DICT)
         torch.save(self.state_dict(), self.save_model_path)
 
-    def save_whole_model(self, path=None):
+    def _save_whole_model(self, path=None):
         if path:
             self.save_model_name = path.replace('\\', '/').split('/')[-1].split('.')[0]
             self.save_model_path = path
