@@ -10,7 +10,6 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 from etc import extensions
-from scripts.feature_fitting_layers.Net_and import Net_and
 from scripts.utils import logUtils
 
 __author__ = 'Lou Zehua'
@@ -62,6 +61,7 @@ def train(x, y, net, criterion, optimizer, num_epochs=num_epochs, act_threshold=
 
 
 if __name__ == '__main__':
+    from scripts.feature_fitting_layers.Net_and import Net_and
     # input
     N = 100
     x_input_array = np.array(torch.rand(N, 2) > 0.5)
