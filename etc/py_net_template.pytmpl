@@ -7,17 +7,17 @@ import torch.nn as nn
 
 from etc import extensions
 
-{}
+{param_net_seq_import}
 from scripts.structure.Net_template import Net_template
 
 __author__ = 'ALM'
-__time__ = '{}'
+__time__ = '{param_time}'
 
-class {}(Net_template):
-    def __init__(self, in_features={}, out_features={}, class_alias=None):
-        super({}, self).__init__(in_features, out_features, class_alias)
+class {param_class_name}(Net_template):
+    def __init__(self, in_features={param_input_size}, out_features={param_output_size}, class_alias=None):
+        super({param_class_name}, self).__init__(in_features, out_features, class_alias)
         self.net_sequence = nn.Sequential(
-            {}
+            {param_net_sequence}
         )
         self.set_caller_pyfile_path(os.path.abspath(__file__))
         self.check_purpose()
@@ -25,9 +25,9 @@ class {}(Net_template):
 
 
 if __name__ == '__main__':
-    net = {}()
+    net = {param_class_name}()
     # load, save and register model
-    net.set_save_mode(extensions.{})
+    net.set_save_mode(extensions.{param_save_model_mode})
     model = net.load_model()
     model.set_caller_pyfile_path(os.path.abspath(__file__))
     model.check_purpose()

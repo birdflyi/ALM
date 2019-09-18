@@ -65,20 +65,18 @@ class Net_transfer(Net_template):
         param_input_size = self.net_sequence[0].in_features
         param_output_size = self.net_sequence[-1].in_features
         param_save_model_mode = ext_models_key2str[self.save_model_mode]
-        args_pytmpl = [
-            param_net_seq_import,
-            param_time,
-            param_class_name,
-            param_input_size,
-            param_output_size,
-            param_class_name,
-            param_net_sequence,
-            param_class_name,
-            param_save_model_mode
-        ]
+        args_pytmpl = {
+            'param_net_seq_import': param_net_seq_import,
+            'param_time': param_time,
+            'param_class_name': param_class_name,
+            'param_input_size': param_input_size,
+            'param_output_size': param_output_size,
+            'param_net_sequence': param_net_sequence,
+            'param_save_model_mode': param_save_model_mode
+        }
         with open(filePathConf.absPathDict[filePathConf.PY_NET_TEMPLATE_PATH], 'r', encoding=encoding) as f_temp:
             net_code_rebuild = f_temp.read()
-        net_code_rebuild = net_code_rebuild.format(*args_pytmpl)
+        net_code_rebuild = net_code_rebuild.format(**args_pytmpl)
         with open(self.save_pyfile_path, 'w', encoding=encoding) as f_net:
             f_net.write(net_code_rebuild)
 
